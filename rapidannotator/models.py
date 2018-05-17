@@ -26,13 +26,10 @@ class User(UserMixin, db.Model):
     """Lower-case version of username to assert uniqueness."""
     _username = db.Column('username', db.String(255), unique=True)
 
-    """Case preserving version of username."""
-    _displayname = db.Column('displayname', db.String(255))
-
     @hybrid_property
     def username(self):
         """Get username."""
-        return self._displayname
+        return self._username
 
     @username.setter
     def username(self, username):
@@ -42,7 +39,6 @@ class User(UserMixin, db.Model):
         """
         validate_username(username)
         self._username = username.lower()
-        self._displayname = username
 
     """ There are 3 levels of user hierarchy,
     userrole field in the User relation can be any one of
@@ -98,7 +94,7 @@ class User(UserMixin, db.Model):
 
     def __str__(self):
         """Representation."""
-        return 'User <id={0.id}, email={0.email}, _displayname={0._displayname}>'.format(self)
+        return 'User <id={0.id}, email={0.email}>'.format(self)
 
     def __repr__(self):
         return '<User {}>'.format(self.username)

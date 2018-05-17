@@ -36,7 +36,7 @@ def login():
                 registrationForm = registrationForm)
 
         login_user(user, remember=loginForm.remember_me.data)
-        return "logged in successful"
+        return redirect(url_for('home.index'))
 
     return render_template('frontpage/main.html',
         loginForm = loginForm,
@@ -62,7 +62,10 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash(_('Congratulations, you are now a registered user!'))
-        return "KOOK"
+
+        return render_template('frontpage/main.html',
+            loginForm = loginForm,
+            registrationForm = registrationForm)
 
     return render_template('frontpage/main.html',
         loginForm = loginForm,
