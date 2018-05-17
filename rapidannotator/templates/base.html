@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="{{ url_for('static', filename='css/customStyles.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='img/logo.png') }}" rel="shortcut icon">
+
+    {% block head %}
+    <title>{% block title %}{% endblock %}</title>
+    {% endblock %}
+
+</head>
+
+
+<nav class="navbar navbar-default">
+<div class="container-fluid">
+  <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    <a class="navbar-brand navbar-left" href="#">
+        <img src="{{url_for('static', filename = 'img/logo.png')}}" alt="Red Hen Logo">
+    </a>
+    <ul class="nav navbar-nav navbar-brand">
+        <li><a href="#">Rapid Annotator</a></li>
+    </ul>
+  </div>
+  <div id="navbar1" class="navbar-collapse collapse">
+      {% if current_user.is_authenticated %}
+          <ul class="nav navbar-nav">
+              <li><a href="#">{{ ('Home') }}</a></li>
+              <li><a href="#">{{ ('My Profile') }}</a></li>
+          </ul>
+      {% endif %}
+      <ul class="nav navbar-nav navbar-right">
+          {% if current_user.is_authenticated %}
+          <li data-toggle="modal" data-target="#logoutModalId">
+              <a href="#">{{ ('Logout') }}</a>
+          </li>
+          {% else %}
+              <li data-toggle="modal" data-target="#registrationModalId">
+                  <a href="#"><span class="glyphicon glyphicon-user"></span>Sign Up</a>
+              </li>
+              <li data-toggle="modal" data-target="#loginModalId">
+                  <a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a>
+              </li>
+          {% endif %}
+      </ul>
+  </div>
+</div>
+</nav>
+
+<body>
+    {{current_user}}
+    <div class ="container-fluid">
+        {%  with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+            <div class ="alert alert-warning alert-dismissible fade in" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span></button>
+                <strong>{{ message }}</strong>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <div id="content">{% block page_body %}{% endblock page_body %}</div>
+    <div id="footer">
+        {% block footer %}
+        <!-- &copy; Copyright 0000000000000002010 by <a href="http://domain.invalid/">you</a>. -->
+        {% endblock footer %}
+    </div>
+</body>
+</html>
