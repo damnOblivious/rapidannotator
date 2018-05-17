@@ -1,0 +1,17 @@
+.navbar-brand {
+  padding: 0px;
+}
+.navbar-brand>img {
+  height: 100%;
+  width: auto;
+}
+
+#message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+#inner-message {
+    margin: 0 auto;
+}
