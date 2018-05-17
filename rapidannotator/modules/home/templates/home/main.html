@@ -1,0 +1,38 @@
+{% extends "home/base.html" %}
+{% from "macros.html" import render_field %}
+
+{% block title %} Home Page {% endblock title %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+  </style>
+{% endblock head %}
+
+{% block home_body %}
+<h1>1111111111111dsdfgsdfgslfjhasdlfjhasdlfh</h1>
+
+<!-- Logout Modal -->
+<div class="modal fade" id="logoutModalId" role="dialog">
+  <div class="modal-dialog modal-sm">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Are you sure you want to logout?</h4>
+      </div>
+
+        <div class="modal-body">
+            <form method="POST" name="logout_form" action = "{{ url_for('home.logout') }}">
+                <div class="form-actions">
+                    <button type="submit" name="submit" value="logout" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Log Out') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock home_body %}
