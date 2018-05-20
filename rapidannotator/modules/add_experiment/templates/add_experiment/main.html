@@ -1,0 +1,46 @@
+{% extends "add_experiment/base.html" %}
+{% from "macros.html" import render_field %}
+
+{% block title %} Add Experiment Page {% endblock title %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+  </style>
+{% endblock head %}
+
+{% block experiment_body %}
+
+<div class="container">
+    <h5>Home > Add Experiments</h5>
+    <h3>Third Experiment</h3>
+    <br>
+</div>
+
+<!-- Logout Modal -->
+<div class="modal fade" id="logoutModalId" role="dialog">
+  <div class="modal-dialog modal-sm">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Are you sure you want to logout?</h4>
+      </div>
+
+        <div class="modal-body">
+            <form method="POST" name="logout_form" action = "{{ url_for('home.logout') }}">
+                <div class="form-actions">
+                    <button type="submit" name="submit" value="logout" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Log Out') }}</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock experiment_body %}
