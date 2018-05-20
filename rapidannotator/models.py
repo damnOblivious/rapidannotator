@@ -17,28 +17,17 @@ class User(UserMixin, db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
+    """Lower-case username to assert uniqueness."""
+    username = db.Column(db.String(255), nullable=False, unique=True)
+
     """Full name of person."""
     fullname = db.Column(db.String(255), nullable=False, default='')
 
     """User email."""
     email = db.Column(db.String(255), nullable=False, unique=True)
 
-    """Lower-case version of username to assert uniqueness."""
-    _username = db.Column('username', db.String(255), unique=True)
-
-    @hybrid_property
-    def username(self):
-        """Get username."""
-        return self._username
-
-    @username.setter
-    def username(self, username):
-        """Set username.
-        note::  The username will be converted to lowercase.
-                The display name will contain the original version.
-        """
-        validate_username(username)
-        self._username = username.lower()
+    """User password."""
+    password = db.Column(db.String(300))
 
     """ There are 3 levels of user hierarchy,
     userrole field in the User relation can be any one of
@@ -62,9 +51,6 @@ class User(UserMixin, db.Model):
         server_default='1',
     )
 
-    """User password."""
-    password = db.Column(db.String(300))
-
     # """List of the user's roles."""
     # roles = db.relationship('Role', secondary=userrole,
     # backref=db.backref('users', lazy='dynamic'))
@@ -75,7 +61,7 @@ class User(UserMixin, db.Model):
         .. note:: The username is not case sensitive.
         """
         return cls.query.filter(
-            User._username == username.lower()
+            User.username == username
         ).one()
 
     @classmethod
@@ -85,12 +71,7 @@ class User(UserMixin, db.Model):
         :returns: A :class:`models.User` instance
             or ``None``.
         """
-        return cls.query.filter_by(user_id=user_id).one_or_none()
-
-    @property
-    def is_anonymous(self):
-        """Return whether this UserProfile is anonymous."""
-        return False
+        return cls.query.filter_by(id=user_id).one_or_none()
 
     def __str__(self):
         """Representation."""

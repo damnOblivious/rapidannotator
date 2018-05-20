@@ -70,7 +70,7 @@ class RegistrationForm(FlaskForm):
         try:
             validate_username(username.data)
         except ValueError as e:
-            raise ValidationError(e)
+            raise ValidationError(_('Invalid Username'))
 
         user = User.query.filter_by(username=username.data).first()
         if user is not None:
