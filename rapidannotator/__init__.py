@@ -4,7 +4,7 @@ app.config.from_object('rapidannotator.config.DevelopmentConfig')
 
 from flask_login import LoginManager
 login = LoginManager()
-login.login_view = 'frontpage'
+login.login_view = 'frontpage.index'
 login.init_app(app)
 
 from rapidannotator.models import db
@@ -30,3 +30,6 @@ app.register_blueprint(frontpage, url_prefix='/frontpage')
 
 from rapidannotator.modules.home import blueprint as home
 app.register_blueprint(home, url_prefix='/home')
+
+from rapidannotator.modules.add_experiment import blueprint as add_experiment
+app.register_blueprint(add_experiment, url_prefix='/add_experiment')
