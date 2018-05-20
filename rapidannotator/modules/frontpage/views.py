@@ -61,7 +61,9 @@ def register():
         )
         db.session.add(user)
         db.session.commit()
-        flash(_('Congratulations, you are now a registered user!'))
+
+        flash(_('Thank you, you are now a registered user.'))
+        flash(_('Please Login to continue.'))
 
         return render_template('frontpage/main.html',
             loginForm = loginForm,
