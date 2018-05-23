@@ -13,8 +13,53 @@
 
 <div class="container">
     <h5>Home > Add Experiments</h5>
-    <h3>Third Experiment</h3>
-    <br>
+    <h3><b>Third Experiment</b></h3>
+    <hr class="horizontal-line">
 </div>
+
+<div class="container">
+  <div class="dropdown pull-right">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="addOwners" data-toggle="dropdown">
+        Add Owner
+    <span class="caret"></span></button>
+    <ul class="dropdown-menu scrollable-dropdown" role="menu" aria-labelledby="addOwners">
+        {% for user in users %}
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{user.fullname}}</a></li>
+        {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="container">
+    {{users}}
+</div>
+
+<script charset="utf-8" type="text/javascript">
+    $(function() {
+
+        var selectedOwner = $('.dropdown-menu li a');
+
+        selectedOwner.on('click', function() {
+
+            var currentSelected = $(this);
+            var userName = currentSelected.text();
+            var url = "{{ url_for('add_experiment._addExperimentOwner')}}";
+            var data = {
+                'userName' : userName,
+            };
+
+            $.getJSON(url , data, function(response) {
+                if(response.success) {
+                    console.log(response);
+                    currentSelected.remove();
+                }
+                else {
+                    /*do something here*/
+                }
+            });
+        });
+
+    });
+</script>
 
 {% endblock experiment_body %}
