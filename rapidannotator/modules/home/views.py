@@ -1,14 +1,13 @@
 from flask import render_template, flash, redirect, url_for, request, jsonify, \
     current_app, g, abort
 from flask_babelex import lazy_gettext as _
+from flask_login import current_user, login_required, login_user, logout_user
 
 from rapidannotator import db
-from rapidannotator.models import User
-from rapidannotator.modules.home import blueprint
-
 from rapidannotator import bcrypt
-from flask_login import current_user, login_required
-from flask_login import login_user, logout_user, current_user
+from rapidannotator.models import User, Experiment
+from rapidannotator.modules.home import blueprint
+from rapidannotator.modules.home.forms import AddExperimentForm
 
 '''
 @blueprint.before_request
@@ -25,7 +24,36 @@ def before_request():
 
 @blueprint.route('/')
 def index():
-    return render_template('home/main.html')
+    addExperimentForm = AddExperimentForm()
+    myExperiments = current_user.my_experiments.all()
+    return render_template('home/main.html',
+        addExperimentForm = addExperimentForm,
+        myExperiments = myExperiments,
+        )
+
+@blueprint.route('/addExperiment', methods=['POST'])
+def addExperiment():
+    addExperimentForm = AddExperimentForm()
+    addExperimentErrors = "errors"
+
+    if addExperimentForm.validate_on_submit():
+        addExperimentErrors = ""
+        experiment = Experiment(
+            name=addExperimentForm.name.data,
+            description=addExperimentForm.description.data,
+            category=addExperimentForm.category.data,
+        )
+        experiment.owners.append(current_user)
+        db.session.add(experiment)
+        db.session.commit()
+
+        experimentId = experiment.id
+        return redirect(url_for('add_experiment.index', experimentId = experimentId))
+
+    return render_template('home/main.html',
+        addExperimentForm = addExperimentForm,
+        addExperimentErrors = addExperimentErrors,)
+
 
 @blueprint.route('/logout', methods=['POST'])
 def logout():

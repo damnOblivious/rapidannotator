@@ -14,7 +14,8 @@
 {% block frontpage_forms %}
 
 <!-- Login Modal -->
-<div class="modal fade" id="loginModalId" role="dialog">
+<div class="modal fade" id="loginModalId" role="dialog" tabindex="-1"
+    aria-labelledby="loginModalId" aria-hidden="true">
   <div class="modal-dialog modal-sm">
 
     <!-- Modal content-->
@@ -26,7 +27,7 @@
 
         <div class="modal-body">
             <form method="POST" name="login_form" action = "{{ url_for('frontpage.login') }}">
-                    {% for field in loginForm %}
+                {% for field in loginForm %}
                     {% if field.widget.input_type == 'hidden' %}
                     {{ field() }}
                     {% else %}
@@ -44,7 +45,8 @@
 </div>
 
 <!-- Registration Modal -->
-<div class="modal fade" id="registrationModalId" role="dialog">
+<div class="modal fade" id="registrationModalId" role="dialog" tabindex="-1"
+    aria-labelledby="registrationModalId">
   <div class="modal-dialog modal-sm">
 
     <!-- Modal content-->

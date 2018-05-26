@@ -1,14 +1,12 @@
 from flask import render_template, flash, redirect, url_for, request, jsonify, \
     current_app, g
 from flask_babelex import lazy_gettext as _
-from flask_login import current_user, login_required
-from flask_login import login_user, logout_user, current_user
+from flask_login import current_user, login_required, login_user, logout_user
 
 from rapidannotator import db
 from rapidannotator import bcrypt
 from rapidannotator.models import User
 from rapidannotator.modules.frontpage import blueprint
-from rapidannotator.modules.frontpage.forms import LoginForm
 from rapidannotator.modules.frontpage.forms import LoginForm, RegistrationForm
 
 @blueprint.route('/')

@@ -15,3 +15,13 @@
 #inner-message {
     margin: 0 auto;
 }
+
+.horizontal-line {
+    border-top: 1px solid #CCCCCC;
+    margin-top: 1em;
+}
+
+.scrollable-dropdown {
+    overflow:auto;
+    max-height: 250px;
+}
