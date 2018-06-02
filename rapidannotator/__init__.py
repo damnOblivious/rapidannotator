@@ -21,6 +21,8 @@ app.json_encoder = JSONEncoder
 from flask_bcrypt import Bcrypt
 bcrypt = Bcrypt(app)
 
+from rapidannotator.filters import datetimeformat
+app.jinja_env.filters['datetimeformat'] = datetimeformat
 
 '''
     ..import all the blueprints
