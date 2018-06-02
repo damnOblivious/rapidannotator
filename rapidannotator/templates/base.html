@@ -28,13 +28,13 @@
         <img src="{{url_for('static', filename = 'img/logo.png')}}" alt="Red Hen Logo">
     </a>
     <ul class="nav navbar-nav navbar-brand">
-        <li><a href="#">Rapid Annotator</a></li>
+        <li><a href="{{ url_for('home.index') }}">Rapid Annotator</a></li>
     </ul>
   </div>
   <div id="navbar1" class="navbar-collapse collapse">
       {% if current_user.is_authenticated %}
           <ul class="nav navbar-nav">
-              <li><a href="#">{{ ('Home') }}</a></li>
+              <li><a href="{{ url_for('home.index') }}">{{ ('Home') }}</a></li>
               <li><a href="#">{{ ('My Profile') }}</a></li>
           </ul>
       {% endif %}
@@ -98,10 +98,10 @@
     </div>
 
     <div id="content">{% block page_body %}{% endblock page_body %}</div>
-    <div id="footer">
-        {% block footer %}
-        <!-- &copy; Copyright 0000000000000002010 by <a href="http://domain.invalid/">you</a>. -->
-        {% endblock footer %}
-    </div>
+    <!-- <div class="container fixed-footer">
+        <a class="footer-copyright footer-items" href="#"><span class="glyphicon glyphicon-copyright-mark"></span> Red Hen Labs</a>
+        <a class="footer-items" href="#"> About</a>
+        <a class="footer-items" href="#"> Contact Us</a>
+    </div> -->
 </body>
 </html>
