@@ -1,5 +1,5 @@
 from flask import render_template, flash, redirect, url_for, request, jsonify, \
-    current_app, g, abort
+    current_app, abort
 from flask_babelex import lazy_gettext as _
 from flask_login import current_user, login_required, login_user, logout_user
 
@@ -26,9 +26,13 @@ def before_request():
 def index():
     addExperimentForm = AddExperimentForm()
     myExperiments = current_user.my_experiments.all()
+    annotatorAssociation = current_user.experiments_to_annotate
+    experimentsToAnnotate = [association.experiment for association in annotatorAssociation]
+
     return render_template('home/main.html',
         addExperimentForm = addExperimentForm,
         myExperiments = myExperiments,
+        experimentsToAnnotate = experimentsToAnnotate,
         )
 
 @blueprint.route('/addExperiment', methods=['POST'])
