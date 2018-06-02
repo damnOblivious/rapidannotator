@@ -25,3 +25,32 @@
     overflow:auto;
     max-height: 250px;
 }
+
+.fixed-footer {
+   position: fixed;
+   left: 0;
+   bottom: 0;
+   width: 100%;
+   /* background-color: #CBC6C6; */
+   background-color: #EEE6E6;
+   color: white;
+   text-align: center;
+}
+
+.footer-copyright {
+    float: left;
+}
+
+.footer-items {
+    padding-left: 1em;
+    padding-right: 2em;
+    font-size: 1.5em;
+    text-decoration: none;
+    color: #777;
+    /* color: #333; */
+    /* color: #766666; */
+}
+
+.btn-space {
+    margin-right: 0.5em;
+}
