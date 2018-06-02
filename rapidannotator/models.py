@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.types import Enum, String, Integer, Boolean
+from sqlalchemy.types import Enum, String, Integer, Boolean, DateTime
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.sql import func
 
 from flask_login import UserMixin
 from flask_security import RoleMixin
@@ -10,8 +11,17 @@ from rapidannotator import login
 
 db = SQLAlchemy()
 
+"""Experiments that a User owns."""
+ExperimentOwner = db.Table(
+    'ExperimentOwner',
+    db.Column('User_id', db.Integer, db.ForeignKey(
+        'User.id'), primary_key=True),
+    db.Column('Experiment_id', db.Integer, db.ForeignKey(
+        'Experiment.id'), primary_key=True)
+)
+
+"""User data model."""
 class User(UserMixin, db.Model):
-    """User data model."""
 
     __tablename__ = "User"
 
@@ -21,10 +31,10 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(255), nullable=False, unique=True)
 
     """Full name of person."""
-    fullname = db.Column(db.String(255), nullable=False, default='')
+    fullname = db.Column(db.String(255), nullable=False, server_default='')
 
     """User email."""
-    email = db.Column(db.String(255), nullable=False, unique=True)
+    email = db.Column(db.String(120), nullable=False, unique=True)
 
     """User password."""
     password = db.Column(db.String(300))
@@ -51,34 +61,115 @@ class User(UserMixin, db.Model):
         server_default='1',
     )
 
-    # """List of the user's roles."""
-    # roles = db.relationship('Role', secondary=userrole,
-    # backref=db.backref('users', lazy='dynamic'))
+    '''List of the experiments owns.'''
+    my_experiments = db.relationship("Experiment", secondary=ExperimentOwner,
+                lazy='dynamic', backref=db.backref('owners',
+                lazy='dynamic')
+    )
 
-    @classmethod
-    def get_by_username(cls, username):
-        """Get profile by username.
-        .. note:: The username is not case sensitive.
-        """
-        return cls.query.filter(
-            User.username == username
-        ).one()
-
-    @classmethod
-    def get_by_userid(cls, user_id):
-        """Get profile by user identifier.
-        :param user_id: The :class:`models.User.id` ID.
-        :returns: A :class:`models.User` instance
-            or ``None``.
-        """
-        return cls.query.filter_by(id=user_id).one_or_none()
+    """ List of experiments user has to annotate
+        one to many relation
+    ..  from User
+    ..  to an AnnotatorAssociation instance
+    """
+    experiments_to_annotate = db.relationship("AnnotatorAssociation",
+                lazy=True, backref=db.backref('annotator',
+                lazy=True)
+    )
 
     def __str__(self):
         """Representation."""
-        return 'User <id={0.id}, email={0.email}>'.format(self)
+        return 'User <id={0.id}, \
+                username={0.username}, \
+                fullname={0.fullname}, \
+                email={0.email}>'.format(self)
 
     def __repr__(self):
-        return '<User {}>'.format(self.username)
+        return 'User <id={0.id}, \
+                username={0.username}, \
+                fullname={0.fullname}, \
+                email={0.email}>'.format(self)
+
+"""Association table for the experiments annotators.(annotator association table)"""
+class AnnotatorAssociation(db.Model):
+
+    __tablename__ = 'AnnotatorAssociation'
+
+    '''the experiment with which user is associated.'''
+    experiment_id = db.Column(Integer, db.ForeignKey(
+        'Experiment.id'), primary_key=True
+    )
+
+    '''the user associated with this experiment.'''
+    user_id = db.Column(Integer, db.ForeignKey(
+    'User.id'), primary_key=True
+    )
+
+    start = db.Column(db.Integer, nullable=False, server_default="0")
+    end = db.Column(db.Integer, nullable=False, server_default="-1")
+    current = db.Column(db.Integer, nullable=False, server_default="0")
+
+    """ many to one relation
+    ..  from an AnnotatorAssociation instance
+    ..  to an Experiment instance
+    """
+    experiment = db.relationship('Experiment',
+                lazy=True, backref=db.backref('annotators',
+                lazy=True)
+    )
+
+class Experiment(db.Model):
+    """Experiment data model."""
+
+    __tablename__ = "Experiment"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    """Name of the Experiment"""
+    name = db.Column(db.String(255), nullable=False, unique=True)
+
+    """A short description about the experiment."""
+    description = db.Column(db.String(320), nullable=False, server_default='')
+
+    """The date and time when the experiment was created."""
+    created_at = db.Column(db.DateTime, server_default=func.now())
+
+    """ Experiments can have one of the 4 types of files
+    ..  Audios,
+    ..  Videos,
+    ..  Images,
+    ..  texts
+    """
+    category = db.Column(
+        db.Enum('audio', 'video', 'image', 'text',
+        name='category'),
+        nullable=False
+    )
+
+    """ Experiments can have one of the 2 types of status
+    ..  Completed,
+    ..  In Progress,
+    """
+    status = db.Column(
+        db.Enum('Completed', 'In Progress',
+        name='status'),
+        server_default="In Progress",
+        nullable=False,
+    )
+
+    def __str__(self):
+        """Representation."""
+        return 'Experiment <id={0.id}, \
+                name={0.name}, \
+                description={0.description}, \
+                category={0.category}>'.format(self)
+
+    def __repr__(self):
+        return 'Experiment <id={0.id}, \
+                name={0.name}, \
+                description={0.description}, \
+                category={0.category}>'.format(self)
+
 
 @login.user_loader
 def load_user(id):
