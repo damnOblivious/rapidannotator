@@ -1,9 +1,9 @@
 from flask import render_template, flash, redirect, url_for, request, jsonify, \
-    current_app, g, abort, jsonify
+    current_app, g, abort, jsonify, session
 from flask_babelex import lazy_gettext as _
 
 from rapidannotator import db
-from rapidannotator.models import User, Experiment
+from rapidannotator.models import User, Experiment, AnnotatorAssociation
 from rapidannotator.modules.add_experiment import blueprint
 
 from rapidannotator import bcrypt
@@ -26,19 +26,53 @@ def before_request():
 def index(experimentId):
     users = User.query.all()
     experiment = Experiment.query.filter_by(id=experimentId).first()
+    owners = experiment.owners
+    annotators = experiment.annotators
+    annotators = [assoc.annotator for assoc in annotators]
+
+    notOwners = [x for x in users if x not in owners]
+    notAnnotators = [x for x in users if x not in annotators]
 
     return render_template('add_experiment/main.html',
         users = users,
         experiment = experiment,
+        notOwners = notOwners,
+        notAnnotators = notAnnotators,
     )
 
-@blueprint.route('/_addExperimentOwner', methods=['GET','POST'])
-def _addExperimentOwner():
+@blueprint.route('/_addOwner', methods=['GET','POST'])
+def _addOwner():
 
-    import sys
-    from rapidannotator import app
-    app.logger.info("heri fera")
-    app.logger.info(request.args)
+    username = request.args['userName']
+    experimentId = request.args['experimentId']
+
+    '''do in try catch'''
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+    user = User.query.filter_by(username=username).first()
+    experiment.owners.append(user)
+    db.session.commit()
+    '''end try catch'''
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)
+
+@blueprint.route('/_addAnnotator', methods=['GET','POST'])
+def _addAnnotator():
+    
+    username = request.args['userName']
+    experimentId = request.args['experimentId']
+
+    '''do in try catch'''
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+    user = User.query.filter_by(username=username).first()
+
+    experimentAnnotator = AnnotatorAssociation()
+    experimentAnnotator.experiment = experiment
+    experimentAnnotator.annotator = user
+    db.session.commit()
+    '''end try catch'''
 
     response = {
         'success' : True,

@@ -12,40 +12,67 @@
 {% block experiment_body %}
 
 <div class="container">
-    <h5>Home > Add Experiments</h5>
-    <h3><b>Third Experiment</b></h3>
-    <hr class="horizontal-line">
 </div>
 
 <div class="container">
-  <div class="dropdown pull-right">
-    <button class="btn btn-primary dropdown-toggle" type="button" id="addOwners" data-toggle="dropdown">
-        Add Owner
-    <span class="caret"></span></button>
-    <ul class="dropdown-menu scrollable-dropdown" role="menu" aria-labelledby="addOwners">
-        {% for user in users %}
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{user.fullname}}</a></li>
-        {% endfor %}
-    </ul>
-  </div>
+    <h5><a>Home</a> > <a>Add Experiments</a></h5>
 </div>
 
 <div class="container">
-    {{users}}
+
+    <div style="display: inline-block">
+        <h3 style="display: inline"><b>{{ experiment.name }}</b></h3>
+    </div>
+
+    <div class="pull-right" style="display: inline-block">
+        <button type="button" class="btn btn-primary btn-group btn-group-inline btn-space">Add Labels</button>
+
+        <div class="dropdown btn-group btn-group-inline btn-space">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="addOwners" data-toggle="dropdown">
+                Add Owner
+            <span class="caret"></span></button>
+            <ul class="dropdown-menu scrollable-dropdown" id="addOwnersMenu" role="menu" aria-labelledby="addOwners">
+                {% for user in notOwners %}
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{user.fullname}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+            <div class="dropdown btn-group btn-group-inline btn-space">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="addAnnotators" data-toggle="dropdown">
+                    Add Annotator
+                <span class="caret"></span></button>
+                <ul class="dropdown-menu scrollable-dropdown" id="addAnnotatorsMenu" role="menu" aria-labelledby="addAnnotators">
+                    {% for user in notAnnotators %}
+                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{user.fullname}}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <button type="button" class="btn btn-success btn-group btn-group-inline btn-space">Done</button>
+
+        </div>
+
+        <hr class="horizontal-line">
+</div>
+
+<div class="container">
 </div>
 
 <script charset="utf-8" type="text/javascript">
     $(function() {
 
-        var selectedOwner = $('.dropdown-menu li a');
+        var selectedOwner = $('#addOwnersMenu li a');
+        var selectedAnnotator = $('#addAnnotatorsMenu li a');
 
         selectedOwner.on('click', function() {
 
             var currentSelected = $(this);
             var userName = currentSelected.text();
-            var url = "{{ url_for('add_experiment._addExperimentOwner')}}";
+            var url = "{{ url_for('add_experiment._addOwner')}}";
             var data = {
                 'userName' : userName,
+                'experimentId' : {{ experiment.id }},
             };
 
             $.getJSON(url , data, function(response) {
@@ -58,6 +85,28 @@
                 }
             });
         });
+
+        selectedAnnotator.on('click', function() {
+
+            var currentSelected = $(this);
+            var userName = currentSelected.text();
+            var url = "{{ url_for('add_experiment._addAnnotator')}}";
+            var data = {
+                'userName' : userName,
+                'experimentId' : {{ experiment.id }},
+            };
+
+            $.getJSON(url , data, function(response) {
+                if(response.success) {
+                    console.log(response);
+                    currentSelected.remove();
+                }
+                else {
+                    /*do something here*/
+                }
+            });
+        });
+
 
     });
 </script>
