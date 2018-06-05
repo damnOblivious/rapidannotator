@@ -161,11 +161,24 @@ class Experiment(db.Model):
         nullable=False,
     )
 
-    """ Experiments can have one of the 2 types of status
-    ..  Completed,
-    ..  In Progress,
+    """ One to One relation
+    ..  For Audio / Video Experiments:
+    ..  details of duration of the display time of the audio / video.
     """
-    display_time = db.relationship("DisplayTime", uselist=False)
+    display_time = db.relationship("DisplayTime", uselist=False,
+                            cascade='all, delete-orphan')
+
+    """ One to Many relation
+    ..  For Text Experiments:
+    ..  the text content for each file.
+    """
+    text_file = db.relationship("TextFile", cascade='all, delete-orphan')
+
+    """ One to Many relation
+    ..  For Images / Audio / Video Experiments:
+    ..  the link / url / path to the actual content of each file.
+    """
+    file = db.relationship("File", cascade='all, delete-orphan')
 
     def __str__(self):
         """Representation."""
