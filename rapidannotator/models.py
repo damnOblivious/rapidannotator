@@ -181,7 +181,7 @@ class Experiment(db.Model):
                 category={0.category}>'.format(self)
 
 """
-    TextFile model to store the text content of the Text Experiments
+    TextFile model to store the text contents of the Text Experiments
 """
 class TextFile(db.Model):
     __tablename__ = 'TextFile'
@@ -206,6 +206,31 @@ class TextFile(db.Model):
     ..  the maximum table row size allowed is 65535 including storing overheads.
     '''
     content = db.Column(db.String(65000), nullable=False, server_default='')
+
+"""
+    File model to store the path to the contents of the Experiments
+    of the type Audio / Video / Image.
+"""
+class File(db.Model):
+    __tablename__ = 'File'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    '''the experiment with which the this text file is associated.'''
+    experiment_id = db.Column(Integer, db.ForeignKey(
+        'Experiment.id'), primary_key=True
+    )
+
+    ''' caption
+    ..  a small description of the text.
+    ..  size is limited to 320 characters
+    '''
+    caption = db.Column(db.String(320), nullable=False, server_default='')
+
+    ''' url
+    ..  the actual url / path of the content / file to be displayed
+    '''
+    url = db.Column(db.String(1024), nullable=False, server_default='')
 
 """
     DisplayTime model to store duration for which the
