@@ -181,6 +181,33 @@ class Experiment(db.Model):
                 category={0.category}>'.format(self)
 
 """
+    TextFile model to store the text content of the Text Experiments
+"""
+class TextFile(db.Model):
+    __tablename__ = 'TextFile'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    '''the experiment with which the this text file is associated.'''
+    experiment_id = db.Column(Integer, db.ForeignKey(
+        'Experiment.id'), primary_key=True
+    )
+
+    ''' caption
+    ..  a small description of the text.
+    ..  size is limited to 320 characters
+    '''
+    caption = db.Column(db.String(320), nullable=False, server_default='')
+
+    ''' content
+    ..  the actual text to be annotated.
+    ..  size is limited to 65000 characters.
+    ..  size limit of TEXT field of MySQL is 65535
+    ..  the maximum table row size allowed is 65535 including storing overheads.
+    '''
+    content = db.Column(db.String(65000), nullable=False, server_default='')
+
+"""
     DisplayTime model to store duration for which the
     video / audio will be played:
 """
