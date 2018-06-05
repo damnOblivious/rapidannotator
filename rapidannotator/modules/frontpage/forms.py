@@ -74,7 +74,7 @@ class RegistrationForm(FlaskForm):
 
         user = User.query.filter_by(username=username.data).first()
         if user is not None:
-            raise ValidationError(_('Please use a different username.'))
+            raise ValidationError(_('Username already taken!'))
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()

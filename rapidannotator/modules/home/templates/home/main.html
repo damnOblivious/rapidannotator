@@ -37,7 +37,7 @@
                 </thead>
                 <tbody>
                     {% for experiment in myExperiments %}
-                        {%- set experiment_url = url_for('add_experiment.index', experimentId = experiment.id) %}
+                        {%- set experiment_url = url_for('view_experiment.index', experimentId = experiment.id) %}
 
                         <tr class='clickable-row'
                             data-href="{{ experiment_url }}">
@@ -168,9 +168,9 @@
 
 <script type="text/javascript">
     $(window).on('load',function(){
-        var addExperimentErrors = "{{addExperimentErrors}}";
+        var errors = "{{errors}}";
 
-        if( "{{addExperimentErrors}}" != "") {
+        if( "{{ errors }}" == "addExperimentErrors") {
             $('#experimentDetailsId').modal('show');
         }
 

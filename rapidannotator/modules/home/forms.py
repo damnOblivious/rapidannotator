@@ -49,7 +49,7 @@ class AddExperimentForm(FlaskForm):
     def validate_name(self, name):
         experiment = Experiment.query.filter_by(name=name.data).first()
         if experiment is not None:
-            raise ValidationError(_('Please use a different username.'))
+            raise ValidationError(_('Experiment name already taken!'))
 
 class DummyForm(FlaskForm):
     """A Dummy form for testing and debugging."""

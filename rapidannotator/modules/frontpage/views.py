@@ -21,6 +21,8 @@ def index():
 
 @blueprint.route('/login', methods=['POST'])
 def login():
+    if current_user.is_authenticated:
+        return "already logged in! :) :) "
     loginForm = LoginForm()
     registrationForm = RegistrationForm()
 
@@ -28,17 +30,17 @@ def login():
         user = User.query.filter_by(username=loginForm.username.data).first()
         if user is None or not bcrypt.check_password_hash(
                                 user.password, loginForm.password.data):
-            flash(_('Invalid username or password'))
-            return render_template('frontpage/main.html',
-                loginForm = loginForm,
-                registrationForm = registrationForm)
+            loginForm.username.errors.append(_('Invalid username or password'))
+            loginForm.password.errors.append(_('Invalid username or password'))
+        else:
+            login_user(user, remember=loginForm.remember_me.data)
+            return redirect(url_for('home.index'))
 
-        login_user(user, remember=loginForm.remember_me.data)
-        return redirect(url_for('home.index'))
-
+    errors = "LogInErrors"
     return render_template('frontpage/main.html',
         loginForm = loginForm,
-        registrationForm = registrationForm)
+        registrationForm = registrationForm,
+        errors = errors,)
 
 @blueprint.route('/register', methods=['POST'])
 def register():
@@ -67,6 +69,8 @@ def register():
             loginForm = loginForm,
             registrationForm = registrationForm)
 
+    errors = "registrationErrors"
     return render_template('frontpage/main.html',
         loginForm = loginForm,
-        registrationForm = registrationForm)
+        registrationForm = registrationForm,
+        errors = errors,)

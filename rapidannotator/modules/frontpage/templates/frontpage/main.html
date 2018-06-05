@@ -75,4 +75,19 @@
 </div>
 
 
+<script type="text/javascript">
+    $(window).on('load',function(){
+        var errors = "{{errors}}";
+
+        if( "{{ errors }}" == "LogInErrors") {
+            $('#loginModalId').modal('show');
+        }
+
+        if( "{{ errors }}" == "registrationErrors") {
+            $('#registrationModalId').modal('show');
+        }
+
+    });
+</script>
+
 {% endblock frontpage_forms %}

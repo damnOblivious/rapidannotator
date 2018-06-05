@@ -38,10 +38,8 @@ def index():
 @blueprint.route('/addExperiment', methods=['POST'])
 def addExperiment():
     addExperimentForm = AddExperimentForm()
-    addExperimentErrors = "errors"
 
     if addExperimentForm.validate_on_submit():
-        addExperimentErrors = ""
         experiment = Experiment(
             name=addExperimentForm.name.data,
             description=addExperimentForm.description.data,
@@ -54,9 +52,10 @@ def addExperiment():
         experimentId = experiment.id
         return redirect(url_for('add_experiment.index', experimentId = experimentId))
 
+    errors = "addExperimentErrors"
     return render_template('home/main.html',
         addExperimentForm = addExperimentForm,
-        addExperimentErrors = addExperimentErrors,)
+        errors = errors,)
 
 
 @blueprint.route('/logout', methods=['POST'])
