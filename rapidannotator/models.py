@@ -90,6 +90,10 @@ class User(UserMixin, db.Model):
                 fullname={0.fullname}, \
                 email={0.email}>'.format(self)
 
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+
 """Association table for the experiments annotators.(annotator association table)"""
 class AnnotatorAssociation(db.Model):
 
@@ -157,6 +161,12 @@ class Experiment(db.Model):
         nullable=False,
     )
 
+    """ Experiments can have one of the 2 types of status
+    ..  Completed,
+    ..  In Progress,
+    """
+    display_time = db.relationship("DisplayTime", uselist=False)
+
     def __str__(self):
         """Representation."""
         return 'Experiment <id={0.id}, \
@@ -170,7 +180,35 @@ class Experiment(db.Model):
                 description={0.description}, \
                 category={0.category}>'.format(self)
 
+"""
+    DisplayTime model to store duration for which the
+    video / audio will be played:
+"""
+class DisplayTime(db.Model):
+    __tablename__ = 'DisplayTime'
 
-@login.user_loader
-def load_user(id):
-    return User.query.get(int(id))
+    id = db.Column(db.Integer, primary_key=True)
+
+    '''the experiment with which the duration is associated.'''
+    experiment_id = db.Column(Integer, db.ForeignKey(
+        'Experiment.id'), primary_key=True
+    )
+
+    ''' before_time
+    ..  the time relative to the time given in the link
+    ..  to display the video / audio.
+    ..  For example if the time(in seconds) in the link is 1540
+    ..  and before time is 13 then the actual time when the video
+    ..  will start will be 1553 (1540 + 13)
+    '''
+    before_time = db.Column(db.Integer, nullable=False, server_default="0")
+
+    ''' after_time
+    ..  the time relative to the time given in the link
+    ..  to display the video / audio.
+    ..  For example if the time(in seconds) in the link is 1540
+    ..  and after time is 27 then the actual time when the video
+    ..  will end will be 1567 (1540 + 27).
+    ..  Default value(-1) implies the video will be played till the end.
+    '''
+    after_time = db.Column(db.Integer, nullable=False, server_default="-1")
