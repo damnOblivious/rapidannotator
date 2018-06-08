@@ -3,7 +3,8 @@ from flask import render_template, flash, redirect, url_for, request, jsonify, \
 from flask_babelex import lazy_gettext as _
 
 from rapidannotator import db
-from rapidannotator.models import User, Experiment, AnnotatorAssociation
+from rapidannotator.models import User, Experiment, AnnotatorAssociation, \
+    DisplayTime
 from rapidannotator.modules.add_experiment import blueprint
 
 from rapidannotator import bcrypt
@@ -40,6 +41,28 @@ def index(experimentId):
         notAnnotators = notAnnotators,
     )
 
+@blueprint.route('/_addDisplayTimeDetails', methods=['GET','POST'])
+def _addDisplayTimeDetails():
+
+    beforeTime = request.args.get('beforeTime', None)
+    afterTime = request.args.get('afterTime', None)
+    experimentId = request.args.get('experimentId', None)
+
+    '''do in try catch'''
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+    experiment.display_time = DisplayTime(
+        before_time = beforeTime,
+        after_time = afterTime,
+    )
+    '''end try catch'''
+    db.session.commit()
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)
+
+
 @blueprint.route('/_addOwner', methods=['GET','POST'])
 def _addOwner():
 
@@ -60,7 +83,7 @@ def _addOwner():
 
 @blueprint.route('/_addAnnotator', methods=['GET','POST'])
 def _addAnnotator():
-    
+
     username = request.args['userName']
     experimentId = request.args['experimentId']
 

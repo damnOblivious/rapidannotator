@@ -220,6 +220,19 @@ class TextFile(db.Model):
     '''
     content = db.Column(db.String(65000), nullable=False, server_default='')
 
+    def __str__(self):
+        """Representation."""
+        return 'TextFile <id={0.id}, \
+                Experiment={0.experiment_id}, \
+                caption={0.caption}, \
+                content={0.content}>'.format(self)
+
+    def __repr__(self):
+        return 'TextFile <id={0.id}, \
+                Experiment={0.experiment_id}, \
+                caption={0.caption}, \
+                content={0.content}>'.format(self)
+
 """
     File model to store the path to the contents of the Experiments
     of the type Audio / Video / Image.
@@ -245,6 +258,19 @@ class File(db.Model):
     '''
     url = db.Column(db.String(1024), nullable=False, server_default='')
 
+    def __str__(self):
+        """Representation."""
+        return 'File <id={0.id}, \
+                Experiment={0.experiment_id}, \
+                caption={0.caption}, \
+                url={0.url}>'.format(self)
+
+    def __repr__(self):
+        return 'File <id={0.id}, \
+                Experiment={0.experiment_id}, \
+                caption={0.caption}, \
+                url={0.url}>'.format(self)
+
 """
     DisplayTime model to store duration for which the
     video / audio will be played:
@@ -252,7 +278,7 @@ class File(db.Model):
 class DisplayTime(db.Model):
     __tablename__ = 'DisplayTime'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     '''the experiment with which the duration is associated.'''
     experiment_id = db.Column(Integer, db.ForeignKey(
@@ -277,3 +303,16 @@ class DisplayTime(db.Model):
     ..  Default value(-1) implies the video will be played till the end.
     '''
     after_time = db.Column(db.Integer, nullable=False, server_default="-1")
+
+    def __str__(self):
+        """Representation."""
+        return 'DisplayTime <id={0.id}, \
+                Experiment={0.experiment_id}, \
+                before_time={0.before_time}, \
+                after_time={0.after_time}>'.format(self)
+
+    def __repr__(self):
+        return 'DisplayTime <id={0.id}, \
+                Experiment={0.experiment_id}, \
+                before_time={0.before_time}, \
+                after_time={0.after_time}>'.format(self)

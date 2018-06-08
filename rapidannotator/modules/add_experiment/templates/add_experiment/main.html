@@ -54,7 +54,41 @@
         </div>
 
         <hr class="horizontal-line">
+
 </div>
+
+<div class="modal fade" id="displayTimeModalId" role="dialog" tabindex="-1"
+    aria-labelledby="displayTimeModalId" aria-hidden="true" data-backdrop="static"
+    data-keyboard="false">
+  <div class="modal-dialog modal-sm">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Enter the play time details of the clips</h4>
+      </div>
+        <div class="modal-body">
+            <form method="POST" id="displayTimeForm" name="logout_form" action = "{{ url_for('add_experiment._addDisplayTimeDetails') }}">
+
+                <b>Before Time</b>
+                <input type="number" name="beforeTime" id="beforeTime" class="form-control validate" placeholder="Before Time(in secs) Example : 65">
+                <span class="help-block"><small>The time relative to the time given in the link to before which the clip will start.</small></span>
+
+                <b>After Time</b>
+                <input type="number" name="afterTime" id="afterTime" class="form-control validate" placeholder="After Time(in secs) Example : 5">
+                <span class="help-block"><small>The time relative to the time given in the link till which the clip will be played.</small></span>
+
+                <div class="form-actions">
+                    <button type="submit" name="submit" value="logout" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Submit') }}</button>
+                    <button type="button" id="submitLater" class="btn btn-default pull-right" data-dismiss="modal">{{ ('Submit later') }}</button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
+  </div>
+</div>
+
 
 <div class="container">
 </div>
@@ -62,8 +96,47 @@
 <script charset="utf-8" type="text/javascript">
     $(function() {
 
+        category = "{{ experiment.category }}";
+        dt = "{{ experiment.display_time }}";
+        if( dt == "None" && (category  === "audio" || category === "video") ) {
+            $('#displayTimeModalId').modal('show');
+        }
+
         var selectedOwner = $('#addOwnersMenu li a');
         var selectedAnnotator = $('#addAnnotatorsMenu li a');
+        var displayTimeForm = $('#displayTimeForm');
+        var submitLater = $('#submitLater');
+
+        displayTimeForm.on('submit', function(e) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            var beforeTime = $('input[name="beforeTime"]').val();
+            var afterTime = $('input[name="afterTime"]').val();
+            setDisplayTime(beforeTime, afterTime);
+        });
+
+        submitLater.on('click', function() {
+            setDisplayTime(0, -1);
+        });
+
+        function setDisplayTime(beforeTime, afterTime) {
+            var url = "{{ url_for('add_experiment._addDisplayTimeDetails')}}";
+            var data = {
+                'beforeTime' : beforeTime,
+                'afterTime' : afterTime,
+                'experimentId' : {{ experiment.id }},
+            };
+
+            $.getJSON(url , data, function(response) {
+                if(response.success) {
+                    console.log(response);
+                    $('#displayTimeModalId').modal('hide');
+                }
+                else {
+                    /*do something here*/
+                }
+            });
+        }
 
         selectedOwner.on('click', function() {
 
