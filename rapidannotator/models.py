@@ -169,6 +169,13 @@ class Experiment(db.Model):
                             cascade='all, delete-orphan')
 
     """ One to Many relation
+    ..  For all types of Experiments:
+    ..  list of the annoatation levels that are associated with
+    ..  that experiment.
+    """
+    annotation_levels = db.relationship("AnnotationLevel", cascade='all, delete-orphan')
+
+    """ One to Many relation
     ..  For Text Experiments:
     ..  the text content for each file.
     """
@@ -194,12 +201,110 @@ class Experiment(db.Model):
                 category={0.category}>'.format(self)
 
 """
+    Annotation Level to store a level of annoatation.
+    ..  For Example: `Gender` is an annotation level,
+    ..  that stores gender of a person.
+    ..  It will have lables like : Male, Female and so on.
+"""
+class AnnotationLevel(db.Model):
+    __tablename__ = 'AnnotationLevel'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    '''the experiment with which the this Annotation Level is associated.'''
+    experiment_id = db.Column(Integer, db.ForeignKey(
+        'Experiment.id'), primary_key=True
+    )
+
+    ''' name
+    ..  name of the annotation level like Gender or Age.
+    ..  it can be of maximum length 32 characters
+    '''
+    name = db.Column(db.String(32), nullable=False, server_default='')
+
+    ''' description
+    ..  a small description of the annotation.
+    ..  via this Experiment Owner can explain that what an annotator
+    ..  is expected to look for while annotating this annotation level.
+    ..  size is limited to 640 characters
+    '''
+    description = db.Column(db.String(640), nullable=False, server_default='')
+
+    ''' level_number
+    ..  decides the order in which an annotator is asked
+    ..  to annotate a particular data item.
+    '''
+    level_number = db.Column(db.Integer, nullable=False)
+
+    """ One to Many relation
+    ..  For AnnotationLevel:
+    ..  list of the labels associated with that annotation level.
+    """
+    lables = db.relationship("Label", cascade='all, delete-orphan')
+
+    def __str__(self):
+        """Representation."""
+        return 'AnnotationLevel <id={0.id}, \
+                Experiment={0.experiment_id}, \
+                name={0.name}, \
+                description={0.description}, \
+                level_number={0.level_number}>'.format(self)
+
+    def __repr__(self):
+        return 'AnnotationLevel <id={0.id}, \
+                Experiment={0.experiment_id}, \
+                name={0.name}, \
+                description={0.description}, \
+                level_number={0.level_number}>'.format(self)
+
+"""
+    Label of an annoatation level.
+    ..  For Example: If AnnotationLevel is `Gender`,
+    ..  that stores gender of a person.
+    ..  It will have Lable(s) like : `Male`, `Female` and so on.
+"""
+class Label(db.Model):
+    __tablename__ = 'Label'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    '''the annotation with which the this Label is associated.'''
+    annotation_id = db.Column(Integer, db.ForeignKey(
+        'AnnotationLevel.id'), primary_key=True
+    )
+
+    ''' name
+    ..  name of the label like `Male` or `Female`.
+    ..  it can be of maximum length 32 characters
+    '''
+    name = db.Column(db.String(32), nullable=False, server_default='')
+
+    ''' key_binding
+    ..  the key binded to a label : For Example: 'a' is associated with Male
+    ..  when User will press that key :
+    '''
+    key_binding = db.Column(db.String(1), nullable=False)
+
+    def __str__(self):
+        """Representation."""
+        return 'Label <id={0.id}, \
+                Annotation={0.annotation_id}, \
+                name={0.name}, \
+                key_binding={0.key_binding}>'.format(self)
+
+    def __repr__(self):
+        return 'Label <id={0.id}, \
+                Annotation={0.annotation_id}, \
+                name={0.name}, \
+                key_binding={0.key_binding}>'.format(self)
+
+"""
     TextFile model to store the text contents of the Text Experiments
 """
 class TextFile(db.Model):
     __tablename__ = 'TextFile'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     '''the experiment with which the this text file is associated.'''
     experiment_id = db.Column(Integer, db.ForeignKey(
@@ -240,7 +345,7 @@ class TextFile(db.Model):
 class File(db.Model):
     __tablename__ = 'File'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     '''the experiment with which the this text file is associated.'''
     experiment_id = db.Column(Integer, db.ForeignKey(

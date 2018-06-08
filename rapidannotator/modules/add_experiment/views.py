@@ -6,8 +6,9 @@ from rapidannotator import db
 from rapidannotator.models import User, Experiment, AnnotatorAssociation, \
     DisplayTime
 from rapidannotator.modules.add_experiment import blueprint
-
+from rapidannotator.modules.add_experiment.forms import AnnotationLevelForm
 from rapidannotator import bcrypt
+
 from flask_login import current_user, login_required
 from flask_login import login_user, logout_user, current_user
 
@@ -102,3 +103,44 @@ def _addAnnotator():
     }
 
     return jsonify(response)
+
+
+@blueprint.route('/lables/<int:experimentId>')
+def editLables(experimentId):
+
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+    annotation_levels = experiment.annotation_levels
+    annotationLevelForm = AnnotationLevelForm(experimentId = experimentId)
+
+    import sys
+    from rapidannotator import app
+    app.logger.info("heri fera")
+    app.logger.info(annotation_levels)
+
+    return render_template('add_experiment/labels.html',
+        experiment = experiment,
+        annotation_levels = annotation_levels,
+        annotationLevelForm = annotationLevelForm,
+    )
+
+@blueprint.route('/_addAnnotationLevel', methods=['POST'])
+def _addAnnotationLevel():
+
+    annotationLevelForm = AnnotationLevelForm()
+
+    experimentId = annotationLevelForm.experimentId.data
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+    annotation_levels = experiment.annotation_levels
+
+    if annotationLevelForm.validate_on_submit():
+        flash(_('Successfully added the annotation level.'))
+        return redirect(url_for('add_experiment.editLables', experimentId = experimentId))
+
+    errors = "annotationLevelErrors"
+
+    return render_template('add_experiment/labels.html',
+        experiment = experiment,
+        annotation_levels = annotation_levels,
+        annotationLevelForm = annotationLevelForm,
+        errors = errors,
+    )

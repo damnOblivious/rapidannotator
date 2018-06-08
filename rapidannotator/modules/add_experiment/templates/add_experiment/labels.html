@@ -15,7 +15,7 @@
 </div>
 
 <div class="container">
-    <h5><a>Home</a> > <a>Add Experiments</a></h5>
+    <h5><a>Home</a> > <a>Add Experiments</a> > <a>Labels</a></h5>
 </div>
 
 <div class="container">
@@ -25,32 +25,11 @@
     </div>
 
     <div class="pull-right" style="display: inline-block">
-        <a href="{{ url_for('add_experiment.editLables', experimentId = experiment.id) }}" class="btn btn-primary btn-group btn-group-inline btn-space">{{ ('Add Labels') }}</a>
 
+        <button type="button" data-toggle="modal" data-target="#addLabelLevel"
+            class="btn btn-primary btn-group btn-group-inline btn-space">{{ ('Add Annotation Level') }}</button>
 
-        <div class="dropdown btn-group btn-group-inline btn-space">
-            <button class="btn btn-primary dropdown-toggle" type="button" id="addOwners" data-toggle="dropdown">
-                Add Owner
-            <span class="caret"></span></button>
-            <ul class="dropdown-menu scrollable-dropdown" id="addOwnersMenu" role="menu" aria-labelledby="addOwners">
-                {% for user in notOwners %}
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{user.fullname}}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
-
-            <div class="dropdown btn-group btn-group-inline btn-space">
-                <button class="btn btn-primary dropdown-toggle" type="button" id="addAnnotators" data-toggle="dropdown">
-                    Add Annotator
-                <span class="caret"></span></button>
-                <ul class="dropdown-menu scrollable-dropdown" id="addAnnotatorsMenu" role="menu" aria-labelledby="addAnnotators">
-                    {% for user in notAnnotators %}
-                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{user.fullname}}</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <button type="button" class="btn btn-success btn-group btn-group-inline btn-space">Done</button>
+        <a href="{{ url_for('add_experiment.editLables', experimentId = experiment.id) }}" class="btn btn-success btn-group btn-group-inline btn-space">{{ ('Done') }}</a>
 
         </div>
 
@@ -58,26 +37,24 @@
 
 </div>
 
-<div class="modal fade" id="displayTimeModalId" role="dialog" tabindex="-1"
-    aria-labelledby="displayTimeModalId" aria-hidden="true" data-backdrop="static"
-    data-keyboard="false">
+<div class="modal fade" id="addLabelLevel" role="dialog" tabindex="-1"
+    aria-labelledby="addLabelLevel" aria-hidden="true">
   <div class="modal-dialog modal-sm">
     <!-- Modal content-->
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Enter the play time details of the clips</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Enter Level Details</h4>
       </div>
         <div class="modal-body">
-            <form method="POST" id="displayTimeForm" name="displayTimeForm" action = "{{ url_for('add_experiment._addDisplayTimeDetails') }}">
-
-                <b>Before Time</b>
-                <input type="number" name="beforeTime" id="beforeTime" class="form-control validate" placeholder="Before Time(in secs) Example : 65">
-                <span class="help-block"><small>The time relative to the time given in the link to before which the clip will start.</small></span>
-
-                <b>After Time</b>
-                <input type="number" name="afterTime" id="afterTime" class="form-control validate" placeholder="After Time(in secs) Example : 5">
-                <span class="help-block"><small>The time relative to the time given in the link till which the clip will be played.</small></span>
-
+            <form method="POST" id="addLabelLevelForm" name="addLabelLevelForm" action = "{{ url_for('add_experiment._addAnnotationLevel') }}">
+                {% for field in annotationLevelForm %}
+                    {% if field.widget.input_type == 'hidden' %}
+                    {{ field() }}
+                    {% else %}
+                    {{ render_field(field, autofocus=True, placeholder=field.label.text) }}
+                    {% endif %}
+                {% endfor %}
                 <div class="form-actions">
                     <button type="submit" name="submit" value="logout" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Submit') }}</button>
                     <button type="button" id="submitLater" class="btn btn-default pull-right" data-dismiss="modal">{{ ('Submit later') }}</button>
@@ -92,16 +69,11 @@
 
 
 <div class="container">
+    {{annotation_levels}}
 </div>
 
 <script charset="utf-8" type="text/javascript">
     $(function() {
-
-        category = "{{ experiment.category }}";
-        dt = "{{ experiment.display_time }}";
-        if( dt == "None" && (category  === "audio" || category === "video") ) {
-            $('#displayTimeModalId').modal('show');
-        }
 
         var selectedOwner = $('#addOwnersMenu li a');
         var selectedAnnotator = $('#addAnnotatorsMenu li a');
