@@ -1,0 +1,11 @@
+Flask_BabelEx==0.9.3
+Flask_Login==0.4.1
+setuptools==20.7.0
+Flask==1.0.1
+Flask_Bcrypt==0.7.1
+Flask_SQLAlchemy==2.3.2
+Flask_WTF==0.14.2
+Flask_Security==3.0.0
+WTForms==2.1
+SQLAlchemy==1.2.7
+speaklater==1.3
