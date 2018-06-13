@@ -4,7 +4,7 @@ from flask_babelex import lazy_gettext as _
 
 from rapidannotator import db
 from rapidannotator.models import User, Experiment, AnnotatorAssociation, \
-    DisplayTime
+    DisplayTime, AnnotationLevel, Label
 from rapidannotator.modules.add_experiment import blueprint
 from rapidannotator.modules.add_experiment.forms import AnnotationLevelForm
 from rapidannotator import bcrypt
@@ -105,7 +105,7 @@ def _addAnnotator():
     return jsonify(response)
 
 
-@blueprint.route('/lables/<int:experimentId>')
+@blueprint.route('/labels/<int:experimentId>')
 def editLables(experimentId):
 
     experiment = Experiment.query.filter_by(id=experimentId).first()
@@ -133,10 +133,19 @@ def _addAnnotationLevel():
     annotation_levels = experiment.annotation_levels
 
     if annotationLevelForm.validate_on_submit():
-        flash(_('Successfully added the annotation level.'))
+        annotationLevel = AnnotationLevel(
+            name = annotationLevelForm.name.data,
+            description = annotationLevelForm.description.data,
+        )
+        if annotationLevelForm.levelNumber.data:
+            annotationLevel.level_number = annotationLevelForm.levelNumber.data
+        experiment.annotation_levels.append(annotationLevel)
+        db.session.commit()
+        # flash(_('Successfully added the annotation level.'))
         return redirect(url_for('add_experiment.editLables', experimentId = experimentId))
 
     errors = "annotationLevelErrors"
+
 
     return render_template('add_experiment/labels.html',
         experiment = experiment,
@@ -144,3 +153,49 @@ def _addAnnotationLevel():
         annotationLevelForm = annotationLevelForm,
         errors = errors,
     )
+
+@blueprint.route('/_addLabels', methods=['POST','GET'])
+def _addLabels():
+
+    import sys
+    from rapidannotator import app
+    app.logger.info("boox boox boox")
+
+    annotationId = request.args.get('annotationId', None)
+    labelName = request.args.get('labelName', None)
+    labelKey = request.args.get('labelKey', None)
+
+    annotationLevel = AnnotationLevel.query.filter_by(id=annotationId).first()
+    label = Label(
+        name = labelName,
+        key_binding = labelKey,
+    )
+    annotationLevel.labels.append(label)
+
+    db.session.commit()
+
+    labelId = label.id
+
+    app.logger.info("booz booz booz")
+    app.logger.info(labelId)
+    app.logger.info("boozy boozy boozy")
+
+    response = {
+        'success' : True,
+        'labelId' : labelId,
+    }
+
+    return jsonify(response)
+
+@blueprint.route('/_deleteLabel', methods=['POST','GET'])
+def _deleteLabel():
+
+    labelId = request.args.get('labelId', None)
+    Label.query.filter_by(id=labelId).delete()
+
+    db.session.commit()
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)

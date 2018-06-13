@@ -25,7 +25,10 @@
     </div>
 
     <div class="pull-right" style="display: inline-block">
-        <a href="{{ url_for('add_experiment.editLables', experimentId = experiment.id) }}" class="btn btn-primary btn-group btn-group-inline btn-space">{{ ('Add Labels') }}</a>
+        {%- set addLablesUrl = url_for('add_experiment.editLables', experimentId = experiment.id) %}
+
+        <a id="addLableButtonId" href="{{ addLablesUrl }}" value="{{ addLablesUrl }}"
+            class="btn btn-primary btn-group btn-group-inline btn-space">{{ ('Add Labels') }}</a>
 
 
         <div class="dropdown btn-group btn-group-inline btn-space">
@@ -68,7 +71,7 @@
         <h4 class="modal-title">Enter the play time details of the clips</h4>
       </div>
         <div class="modal-body">
-            <form method="POST" id="displayTimeForm" name="displayTimeForm" action = "{{ url_for('add_experiment._addDisplayTimeDetails') }}">
+            <form method="POST" id="displayTimeForm" name="displayTimeForm">
 
                 <b>Before Time</b>
                 <input type="number" name="beforeTime" id="beforeTime" class="form-control validate" placeholder="Before Time(in secs) Example : 65">
@@ -79,7 +82,7 @@
                 <span class="help-block"><small>The time relative to the time given in the link till which the clip will be played.</small></span>
 
                 <div class="form-actions">
-                    <button type="submit" name="submit" value="logout" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Submit') }}</button>
+                    <button type="submit" name="submit" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Submit') }}</button>
                     <button type="button" id="submitLater" class="btn btn-default pull-right" data-dismiss="modal">{{ ('Submit later') }}</button>
                 </div>
             </form>
@@ -92,6 +95,7 @@
 
 
 <div class="container">
+    {{experiment.display_time}}
 </div>
 
 <script charset="utf-8" type="text/javascript">
@@ -107,6 +111,7 @@
         var selectedAnnotator = $('#addAnnotatorsMenu li a');
         var displayTimeForm = $('#displayTimeForm');
         var submitLater = $('#submitLater');
+        // var addLableButtonId = $('#addLableButtonId');
 
         displayTimeForm.on('submit', function(e) {
             e.stopImmediatePropagation();
@@ -119,6 +124,11 @@
         submitLater.on('click', function() {
             setDisplayTime(0, -1);
         });
+
+        // addLableButtonId.on('click', function() {
+        //     url =  $(this).attr("value");
+        //     window.location.replace(url);
+        // });
 
         function setDisplayTime(beforeTime, afterTime) {
             var url = "{{ url_for('add_experiment._addDisplayTimeDetails')}}";

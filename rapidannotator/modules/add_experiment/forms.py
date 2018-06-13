@@ -11,8 +11,6 @@ from wtforms import FormField, PasswordField, StringField, SubmitField, \
 from wtforms.validators import DataRequired, EqualTo, StopValidation, \
     ValidationError, Email, Length
 
-from werkzeug.datastructures import MultiDict
-
 from rapidannotator.models import User
 
 
@@ -24,10 +22,38 @@ def strip_filter(text):
     """
     return text.strip() if text else text
 
-class LocationForm(FlaskForm):
-    location_id = StringField('location_id')
-    city = StringField('city')
+class LabelForm(FlaskForm):
 
+    annotationLevelId = HiddenField(
+        label=_('Associated annotation level id'),
+        description=_("Id of the associated annotation level"),
+        validators=[DataRequired(message=_('Associated annotation level id not provided.'))],
+    )
+
+    name = StringField(
+        label=_('Label Name'),
+        description=_("Label Name : Example Male, Female. \
+                Can't exceed 32 characters"),
+        validators=[DataRequired(message=_('Label name not provided.'))],
+        filters=[strip_filter],
+    )
+
+    keyBinding = StringField(
+        label=_('Key Binding'),
+        description=_("The key bound to the label."),
+        validators=[],
+        filters =[strip_filter],
+    )
+
+    def validate_key_binding(self, key_binding):
+        """
+            Check if the same key is bound to any
+            other label in the same annotation level.
+            If key_binding == None: assign any random key
+            that is not previously assigned to any other
+            label in the same annotation level.
+        """
+        pass
 
 class AnnotationLevelForm(FlaskForm):
 
@@ -39,7 +65,7 @@ class AnnotationLevelForm(FlaskForm):
 
     name = StringField(
         label=_('Annotation Level Name'),
-        description=_("Name of the annotation level like Gender or Age. \
+        description=_("Name of the annotation level: Example Gender, Age. \
                 Can't exceed 32 characters"),
         validators=[DataRequired(message=_('Annotation level name not provided.'))],
         filters=[strip_filter],
@@ -53,13 +79,11 @@ class AnnotationLevelForm(FlaskForm):
         filters =[strip_filter],
     )
 
-    levelnumber = IntegerField(
+    levelNumber = IntegerField(
         label=_('Annotation level Number'),
         description=_("It decides the order in which an annotator is asked to annotate the data-items."),
         validators=[DataRequired(message=_('Annotation level number not provided.'))],
     )
-
-    locations = FieldList(FormField(LocationForm))
 
     def validate_levelnumber(self, username):
         """Wrap username validator for WTForms."""

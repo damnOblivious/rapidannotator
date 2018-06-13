@@ -18,6 +18,7 @@
     <h5><a>Home</a> > <a>Add Experiments</a> > <a>Labels</a></h5>
 </div>
 
+
 <div class="container">
 
     <div style="display: inline-block">
@@ -26,7 +27,7 @@
 
     <div class="pull-right" style="display: inline-block">
 
-        <button type="button" data-toggle="modal" data-target="#addLabelLevel"
+        <button type="button" data-toggle="modal" data-target="#addLabelLevelModal"
             class="btn btn-primary btn-group btn-group-inline btn-space">{{ ('Add Annotation Level') }}</button>
 
         <a href="{{ url_for('add_experiment.editLables', experimentId = experiment.id) }}" class="btn btn-success btn-group btn-group-inline btn-space">{{ ('Done') }}</a>
@@ -37,8 +38,139 @@
 
 </div>
 
-<div class="modal fade" id="addLabelLevel" role="dialog" tabindex="-1"
-    aria-labelledby="addLabelLevel" aria-hidden="true">
+
+<div class="container">
+    {% for annotation_level in annotation_levels %}
+            {{annotation_level.id}}
+            <div class="row annotation_level annotation_level_{{annotation_level.id}}" value={{annotation_level.id}}>
+                <div class="col-xs-12">
+                    <div class="annotationDescription">
+                        <span class="col-xs-2 h5 wrapWord"><b>{{ annotation_level.name }}</b></span>
+                        <span class="col-xs-7 h5">{{ annotation_level.description }}</span>
+                        <span class="col-xs-2 container-fluid addMoreButtonClass">
+                            {%- if annotation_level.labels -%}
+                                <button type="button" data-toggle="modal" data-target="#addLabelModal"
+                                    class="addLabelButton btn btn-group btn-group-inline btn-space btn-sm">
+                                Add More Labels</button>
+                            {%- endif -%}
+                        </span>
+                        <span class="col-xs-1 pull-right glyphicon glyphicon-pencil edit-button-margin"
+                            data-toggle="modal" data-target="#editAnnotationLevelModalId"></span>
+                    </div>
+                </div>
+
+                <div class="container-fluid addFirstLabel">
+                    {%- if not annotation_level.labels -%}
+                        <button type="button" data-toggle="modal" data-target="#addLabelModal"
+                            class="addLabelButton btn btn-group btn-group-inline btn-space btn-sm">
+                        Add Labels</button>
+                    {%- endif -%}
+                </div>
+
+                    <div class="col-xs-12 container-fluid labelCollection">
+                        {% for label in annotation_level.labels %}
+                        <span class="labels" value={{label.id}}>
+                            <span class="col-xs-3 h5"> {{ label.name }} </span>
+                            <span class="col-xs-1 h5 pull-left"> {%- if label.key_binding -%} {{ label.key_binding }} {%- else -%} {{('default')}} {%- endif -%} </span>
+                            <span class="col-xs-1 glyphicon glyphicon-trash edit-button-margin"
+                                data-toggle="modal" data-target="#deleteLabelModal"></span>
+                            <span class="col-xs-1 glyphicon glyphicon-pencil edit-button-margin"
+                                data-toggle="modal" data-target="#editLabel"></span>
+                        </span>
+                        {% endfor %}
+                    </div>
+            </div>
+            <hr>
+    {% endfor %}
+</div>
+
+<!-- Edit-Annotation-Level-Modal -->
+<div class="modal fade" id="editAnnotationLevelModalId" role="dialog" tabindex="-1"
+    aria-labelledby="editAnnotationLevelModalId" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Are you sure you want to delete it?</h4>
+      </div>
+        <div class="modal-body">
+            <form method="POST" id="deleteLabelForm" name="deleteLabelForm">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Delete') }}</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Delete-Label-Modal -->
+<div class="modal fade" id="deleteLabelModal" role="dialog" tabindex="-1"
+    aria-labelledby="deleteLabelModal" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Are you sure you want to delete it?</h4>
+      </div>
+        <div class="modal-body">
+            <form method="POST" id="deleteLabelForm" name="deleteLabelForm">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Delete') }}</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Add-Label-Modal -->
+<div class="modal fade" id="addLabelModal" role="dialog" tabindex="-1"
+    aria-labelledby="addLabelModal" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Enter Label Details</h4>
+      </div>
+        <div class="modal-body">
+            <form method="POST" id="addLabelForm" name="addLabelForm">
+
+                <b>Label Name</b>
+                <input type="text" name="labelName" id="labelName" maxlength="32"
+                    class="form-control validate" placeholder="Label Name">
+                <span class="help-block"><small>Label Name (should be precise and unambiguous). Max length : 32</small></span>
+
+                <b>Key Binding</b>
+                <input type="text" name="labelKey" id="labelKey"
+                    class="form-control validate" placeholder="Key Binding(Optional)" maxlength="1">
+                <span class="help-block"><small>Key Binding Example : a.</small></span>
+
+                <div class="form-actions">
+                    <button type="submit" name="submit" value="" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Submit') }}</button>
+                    <button type="button" id="" class="btn btn-default pull-right" data-dismiss="modal">{{ ('Cancel') }}</button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Add-Label-Level-Modal -->
+<div class="modal fade" id="addLabelLevelModal" role="dialog" tabindex="-1"
+    aria-labelledby="addLabelLevelModal" aria-hidden="true">
   <div class="modal-dialog modal-sm">
     <!-- Modal content-->
     <div class="modal-content">
@@ -56,7 +188,7 @@
                     {% endif %}
                 {% endfor %}
                 <div class="form-actions">
-                    <button type="submit" name="submit" value="logout" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Submit') }}</button>
+                    <button type="submit" name="submit" value="" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Submit') }}</button>
                     <button type="button" id="submitLater" class="btn btn-default pull-right" data-dismiss="modal">{{ ('Submit later') }}</button>
                 </div>
             </form>
@@ -68,90 +200,169 @@
 </div>
 
 
-<div class="container">
-    {{annotation_levels}}
-</div>
-
 <script charset="utf-8" type="text/javascript">
     $(function() {
 
-        var selectedOwner = $('#addOwnersMenu li a');
-        var selectedAnnotator = $('#addAnnotatorsMenu li a');
-        var displayTimeForm = $('#displayTimeForm');
-        var submitLater = $('#submitLater');
+        var addLabelForm = $('#addLabelForm');
+        var addLabelButton = $('.addLabelButton');
+        var deleteLabelForm = $('#deleteLabelForm');
 
-        displayTimeForm.on('submit', function(e) {
+        var editLabelButton = '.labels .glyphicon-pencil, .labels .glyphicon-trash';
+        var selectedAnnotationId = -1;
+        var selectedLabelId = -1;
+
+        $("body").on("click", editLabelButton, function() {
+            selectedLabelId = $(this).parent().attr('value');
+            selectedAnnotationId = $(this).closest('.annotation_level').attr('value');
+        });
+
+        addLabelButton.on('click', function() {
+            selectedAnnotationId = $(this).closest('.annotation_level').attr('value');
+        });
+
+        addLabelForm.on('submit', function(e) {
+
             e.stopImmediatePropagation();
             e.preventDefault();
-            var beforeTime = $('input[name="beforeTime"]').val();
-            var afterTime = $('input[name="afterTime"]').val();
-            setDisplayTime(beforeTime, afterTime);
+            var labelName = $('input[name="labelName"]').val();
+            var labelKey = $('input[name="labelKey"]').val();
+            var labelTuple = {
+                "labelName" : labelName,
+                "labelKey" : labelKey,
+                "annotationId" : selectedAnnotationId,
+            };
+            console.log(labelTuple);
+            displayAndAddLabel(labelTuple);
+
+            $('#addLabelModal').modal('hide');
+            $('input[name="labelName"]').val("");
+            $('input[name="labelKey"]').val("");
+
         });
 
-        submitLater.on('click', function() {
-            setDisplayTime(0, -1);
-        });
-
-        function setDisplayTime(beforeTime, afterTime) {
-            var url = "{{ url_for('add_experiment._addDisplayTimeDetails')}}";
+        deleteLabelForm.on('submit', function(e) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            var url = "{{ url_for('add_experiment._deleteLabel')}}";
             var data = {
-                'beforeTime' : beforeTime,
-                'afterTime' : afterTime,
-                'experimentId' : {{ experiment.id }},
+                'labelId' : selectedLabelId,
             };
 
             $.getJSON(url , data, function(response) {
                 if(response.success) {
-                    console.log(response);
-                    $('#displayTimeModalId').modal('hide');
+                    deleteAsync(selectedLabelId, selectedAnnotationId);
+                }
+                else {
+                    /*do something here*/
+                }
+            });
+
+        });
+
+        function deleteAsync(labelId, annotationId) {
+            $(".labels[value= " + labelId + "]").remove();
+            $('#deleteLabelModal').modal('hide');
+            var annotationLevel = $(".annotation_level[value= " + annotationId + "]");
+            var annotationLabelCollection = annotationLevel.find(".labelCollection .labels");
+
+            if(annotationLabelCollection.length == 0) {
+
+                var addMoreButton = annotationLevel.find(".annotationDescription .addMoreButtonClass button");
+                addMoreButton.remove();
+                var buttonAttributeDict = {
+                    "type":         "button",
+                    "text":         "Add Labels",
+                    "class":        "addLabelButton btn btn-group btn-group-inline btn-space btn-sm",
+                    "data-toggle":  "modal",
+                    "data-target":  "#addLabelModal",
+                };
+
+                var firstLabelButton = $("<button/>", buttonAttributeDict);
+                var addFirstLabel = annotationLevel.find(".addFirstLabel");
+                firstLabelButton.appendTo(addFirstLabel);
+
+            }
+        }
+
+        function displayAndAddLabel(labelTuple) {
+            addAsync(labelTuple);
+        };
+
+        function displayAsync(labelTuple, newLabelId) {
+
+            var parentSpan = $("<span/>", {
+                "class":    "labels",
+                "value":    newLabelId,
+            });
+
+            var nameSpan = $("<span/>", {
+                "text":     labelTuple['labelName'],
+                "class":    "col-xs-3 h5",
+            });
+
+            var keySpan = $("<span/>", {
+                "text":     labelTuple['labelKey'] ? labelTuple['labelKey'] : "default",
+                "class":   "col-xs-1 h5 pull-left",
+            });
+
+            var trashIconSpan = $("<span/>", {
+                "class":        "col-xs-1 glyphicon glyphicon-trash edit-button-margin",
+                "data-toggle":  "modal",
+                "data-target":  "#deleteLabelModal",
+            });
+
+            var editIconSpan = $("<span/>", {
+                "class":   "col-xs-1 glyphicon glyphicon-pencil edit-button-margin",
+                "data-toggle":  "modal",
+            });
+
+            parentSpan.append(nameSpan, keySpan, trashIconSpan, editIconSpan);
+
+            /* NOTE TODO use value based selection Instead*/
+            var annotation_levelClass = "annotation_level_" + labelTuple['annotationId']
+            $("." + annotation_levelClass + " .labelCollection").append(parentSpan);
+
+            var annotationLabels = "." + annotation_levelClass + " .labelCollection .labels"
+            /*
+                if it is the first label i.e. not labels
+                have been added so far then
+                remove the button in addFirstLabel and
+                add a button in annotationDescription
+            */
+            if($(annotationLabels).length == 1) {
+
+                var firstLabelButton = "." + annotation_levelClass + " .addFirstLabel button"
+                $(firstLabelButton).remove();
+
+                var buttonAttributeDict = {
+                    "type" :          "button",
+                    "text":           'Add More Labels',
+                    "class" :        "addLabelButton btn btn-group btn-group-inline btn-space btn-sm",
+                    "data-toggle" :   "modal",
+                    "data-target" :   "#addLabelModal",
+                };
+
+                var buttonToAdd = $("<button/>", buttonAttributeDict);
+                var descriptionClass = "." + annotation_levelClass + " .annotationDescription .addMoreButtonClass"
+                buttonToAdd.appendTo(descriptionClass);
+
+            }
+
+        }
+
+        function addAsync(labelTuple) {
+            var url = "{{ url_for('add_experiment._addLabels')}}";
+            var data = labelTuple;
+
+            $.getJSON(url , data, function(response) {
+                if(response.success) {
+                    displayAsync(labelTuple, response.labelId);
                 }
                 else {
                     /*do something here*/
                 }
             });
         }
-
-        selectedOwner.on('click', function() {
-
-            var currentSelected = $(this);
-            var userName = currentSelected.text();
-            var url = "{{ url_for('add_experiment._addOwner')}}";
-            var data = {
-                'userName' : userName,
-                'experimentId' : {{ experiment.id }},
-            };
-
-            $.getJSON(url , data, function(response) {
-                if(response.success) {
-                    console.log(response);
-                    currentSelected.remove();
-                }
-                else {
-                    /*do something here*/
-                }
-            });
-        });
-
-        selectedAnnotator.on('click', function() {
-
-            var currentSelected = $(this);
-            var userName = currentSelected.text();
-            var url = "{{ url_for('add_experiment._addAnnotator')}}";
-            var data = {
-                'userName' : userName,
-                'experimentId' : {{ experiment.id }},
-            };
-
-            $.getJSON(url , data, function(response) {
-                if(response.success) {
-                    console.log(response);
-                    currentSelected.remove();
-                }
-                else {
-                    /*do something here*/
-                }
-            });
-        });
 
 
     });
