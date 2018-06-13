@@ -204,7 +204,7 @@ class Experiment(db.Model):
     Annotation Level to store a level of annoatation.
     ..  For Example: `Gender` is an annotation level,
     ..  that stores gender of a person.
-    ..  It will have lables like : Male, Female and so on.
+    ..  It will have labels like : Male, Female and so on.
 """
 class AnnotationLevel(db.Model):
     __tablename__ = 'AnnotationLevel'
@@ -240,7 +240,7 @@ class AnnotationLevel(db.Model):
     ..  For AnnotationLevel:
     ..  list of the labels associated with that annotation level.
     """
-    lables = db.relationship("Label", cascade='all, delete-orphan')
+    labels = db.relationship("Label", cascade='all, delete-orphan')
 
     def __str__(self):
         """Representation."""
@@ -280,10 +280,10 @@ class Label(db.Model):
     name = db.Column(db.String(32), nullable=False, server_default='')
 
     ''' key_binding
-    ..  the key binded to a label : For Example: 'a' is associated with Male
+    ..  the key bound to a label : For Example: 'a' is associated with Male
     ..  when User will press that key :
     '''
-    key_binding = db.Column(db.String(1), nullable=False)
+    key_binding = db.Column(db.String(1), nullable=False, server_default='')
 
     def __str__(self):
         """Representation."""
