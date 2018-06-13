@@ -240,7 +240,9 @@ class AnnotationLevel(db.Model):
     ..  For AnnotationLevel:
     ..  list of the labels associated with that annotation level.
     """
-    labels = db.relationship("Label", cascade='all, delete-orphan')
+    labels = db.relationship("Label", cascade='all, delete-orphan',
+                passive_deletes=True
+    )
 
     def __str__(self):
         """Representation."""
@@ -270,7 +272,7 @@ class Label(db.Model):
 
     '''the annotation with which the this Label is associated.'''
     annotation_id = db.Column(Integer, db.ForeignKey(
-        'AnnotationLevel.id'), primary_key=True
+        'AnnotationLevel.id', ondelete='CASCADE')
     )
 
     ''' name
