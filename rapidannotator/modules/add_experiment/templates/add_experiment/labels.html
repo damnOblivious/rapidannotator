@@ -27,7 +27,7 @@
 
     <div class="pull-right" style="display: inline-block">
 
-        <button type="button" data-toggle="modal" data-target="#addLabelLevelModal"
+        <button type="button" data-toggle="modal" data-target="#addAnnotationLevelModal"
             class="btn btn-primary btn-group btn-group-inline btn-space">{{ ('Add Annotation Level') }}</button>
 
         <a href="{{ url_for('add_experiment.editLables', experimentId = experiment.id) }}" class="btn btn-success btn-group btn-group-inline btn-space">{{ ('Done') }}</a>
@@ -41,12 +41,12 @@
 
 <div class="container">
     {% for annotation_level in annotation_levels %}
-            {{annotation_level.id}}
-            <div class="row annotation_level annotation_level_{{annotation_level.id}}" value={{annotation_level.id}}>
+            <div class="row annotation_level annotation_level_{{annotation_level.id}}" value={{annotation_level.id}}
+                data-level={{annotation_level.level_number}}>
                 <div class="col-xs-12">
-                    <div class="annotationDescription">
-                        <span class="col-xs-2 h5 wrapWord"><b>{{ annotation_level.name }}</b></span>
-                        <span class="col-xs-7 h5">{{ annotation_level.description }}</span>
+                    <div class="annotationDescriptionGrp">
+                        <span class="col-xs-2 h5 wrapWord annotationName"><b>{{ annotation_level.name }}</b></span>
+                        <span class="col-xs-7 h5 annotationDescription">{{ annotation_level.description }}</span>
                         <span class="col-xs-2 container-fluid addMoreButtonClass">
                             {%- if annotation_level.labels -%}
                                 <button type="button" data-toggle="modal" data-target="#addLabelModal"
@@ -55,7 +55,7 @@
                             {%- endif -%}
                         </span>
                         <span class="col-xs-1 pull-right glyphicon glyphicon-pencil edit-button-margin"
-                            data-toggle="modal" data-target="#editAnnotationLevelModalId"></span>
+                            data-toggle="modal" data-target="#editAnnotationLevelModal"></span>
                     </div>
                 </div>
 
@@ -67,37 +67,82 @@
                     {%- endif -%}
                 </div>
 
-                    <div class="col-xs-12 container-fluid labelCollection">
-                        {% for label in annotation_level.labels %}
-                        <span class="labels" value={{label.id}}>
-                            <span class="col-xs-3 h5"> {{ label.name }} </span>
-                            <span class="col-xs-1 h5 pull-left"> {%- if label.key_binding -%} {{ label.key_binding }} {%- else -%} {{('default')}} {%- endif -%} </span>
-                            <span class="col-xs-1 glyphicon glyphicon-trash edit-button-margin"
-                                data-toggle="modal" data-target="#deleteLabelModal"></span>
-                            <span class="col-xs-1 glyphicon glyphicon-pencil edit-button-margin"
-                                data-toggle="modal" data-target="#editLabel"></span>
-                        </span>
-                        {% endfor %}
-                    </div>
+                <div class="col-xs-12 container-fluid labelCollection">
+                    {% for label in annotation_level.labels %}
+                    <span class="labels" value={{label.id}}>
+                        <span class="col-xs-3 h5"> {{ label.name }} </span>
+                        <span class="col-xs-1 h5 pull-left"> {%- if label.key_binding -%} {{ label.key_binding }} {%- else -%} {{('default')}} {%- endif -%} </span>
+                        <span class="col-xs-1 glyphicon glyphicon-trash edit-button-margin"
+                            data-toggle="modal" data-target="#deleteLabelModal"></span>
+                        <span class="col-xs-1 glyphicon glyphicon-pencil edit-button-margin"
+                            data-toggle="modal" data-target="#editLabel"></span>
+                    </span>
+                    {% endfor %}
+                </div>
+
             </div>
-            <hr>
+            <hr value={{annotation_level.id}}>
     {% endfor %}
 </div>
 
-<!-- Edit-Annotation-Level-Modal -->
-<div class="modal fade" id="editAnnotationLevelModalId" role="dialog" tabindex="-1"
-    aria-labelledby="editAnnotationLevelModalId" aria-hidden="true">
+<!-- Delete-Annotation-Modal -->
+<div class="modal fade" id="deleteAnnotationLevel" role="dialog" tabindex="-1"
+    aria-labelledby="deleteAnnotationLevel" aria-hidden="true">
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Are you sure you want to delete it?</h4>
+        <h4 class="modal-title">Confirm Deletion.</h4>
       </div>
         <div class="modal-body">
-            <form method="POST" id="deleteLabelForm" name="deleteLabelForm">
+            <form name="deleteAnnotationLevelForm" id="deleteAnnotationLevelForm">
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Delete') }}</button>
                     <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Edit-Annotation-Level-Modal -->
+<div class="modal fade" id="editAnnotationLevelModal" role="dialog" tabindex="-1"
+    aria-labelledby="editAnnotationLevelModal" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Edit / Delete Annotation Level</h4>
+      </div>
+        <div class="modal-body">
+            <form id="editAnnotationLevelForm" name="editAnnotationLevelForm">
+
+                <b>Annotation Level Name</b>
+                <input type="text" name="annotationName" maxlength="32" maxlength="32"
+                    class="form-control validate" placeholder="Annotation Level Name">
+                <span class="help-block"><small>Name of the annotation level: Example Gender, Age. Can't exceed 32 characters
+                </small></span>
+
+                <b>Annotation level description</b>
+                <input type="text" name="annotationDescription"
+                    class="form-control validate" placeholder="Annotation level description" maxlength="640">
+                <span class="help-block"><small>A short description : guidilines for the annotator. Can't exceed 640 characters
+                </small></span>
+
+                <b>Annotation level Number</b>
+                <input type="number" name="annotationLevel"
+                    class="form-control validate" placeholder="Annotation level Number">
+                <span class="help-block"><small>It decides the order in which an annotator is asked to annotate the data-items.
+                </small></span>
+
+                <div class="form-actions">
+                    <button type="submit" name="submit" value="" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Save') }}</button>
+                    <button type="button" class="btn btn-danger pull-right" data-toggle="modal"
+                        data-target="#deleteAnnotationLevel" data-dismiss="modal">{{ ('Delete') }}</button>
                 </div>
             </form>
         </div>
@@ -146,7 +191,7 @@
             <form method="POST" id="addLabelForm" name="addLabelForm">
 
                 <b>Label Name</b>
-                <input type="text" name="labelName" id="labelName" maxlength="32"
+                <input type="text" name="labelName" id="labelName" maxlength="32" minlength="1"
                     class="form-control validate" placeholder="Label Name">
                 <span class="help-block"><small>Label Name (should be precise and unambiguous). Max length : 32</small></span>
 
@@ -169,8 +214,8 @@
 
 
 <!-- Add-Label-Level-Modal -->
-<div class="modal fade" id="addLabelLevelModal" role="dialog" tabindex="-1"
-    aria-labelledby="addLabelLevelModal" aria-hidden="true">
+<div class="modal fade" id="addAnnotationLevelModal" role="dialog" tabindex="-1"
+    aria-labelledby="addAnnotationLevelModal" aria-hidden="true">
   <div class="modal-dialog modal-sm">
     <!-- Modal content-->
     <div class="modal-content">
@@ -206,8 +251,11 @@
         var addLabelForm = $('#addLabelForm');
         var addLabelButton = $('.addLabelButton');
         var deleteLabelForm = $('#deleteLabelForm');
-
         var editLabelButton = '.labels .glyphicon-pencil, .labels .glyphicon-trash';
+        var editAnnotationLevelButton = $('.annotationDescriptionGrp .glyphicon-pencil');
+        var editAnnotationLevelForm = $('#editAnnotationLevelForm');
+        var deleteAnnotationLevelForm = $('#deleteAnnotationLevelForm');
+
         var selectedAnnotationId = -1;
         var selectedLabelId = -1;
 
@@ -218,6 +266,70 @@
 
         addLabelButton.on('click', function() {
             selectedAnnotationId = $(this).closest('.annotation_level').attr('value');
+        });
+
+        editAnnotationLevelButton.on('click', function() {
+            selectedAnnotation = $(this).closest('.annotation_level');
+            selectedAnnotationId = selectedAnnotation.attr('value');
+
+            annotationName = selectedAnnotation.find('.annotationName').text();
+            annotationDescription = selectedAnnotation.find('.annotationDescription').text();
+            annotationLevel = selectedAnnotation.data('level');
+
+            editAnnotationLevelForm.find('input[name="annotationName"]').val(annotationName);
+            editAnnotationLevelForm.find('input[name="annotationDescription"]').val(annotationDescription);
+            editAnnotationLevelForm.find('input[name="annotationLevel"]').val(annotationLevel);
+        });
+
+        editAnnotationLevelForm.on('submit', function(e) {
+
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            name = editAnnotationLevelForm.find('input[name="annotationName"]').val();
+            description = editAnnotationLevelForm.find('input[name="annotationDescription"]').val();
+            levelNumber = editAnnotationLevelForm.find('input[name="annotationLevel"]').val();
+
+            var url = "{{ url_for('add_experiment._editAnnotationLevel')}}";
+            var data = {
+                annotationId:   selectedAnnotationId,
+                annotationName: name,
+                annotationDescription: description,
+                annotationLevelNumber: levelNumber,
+            };
+
+            $.getJSON(url , data, function(response) {
+                if(response.success) {
+                    updateAnnotationLevel(selectedAnnotationId, name, description, levelNumber);
+                    $('#editAnnotationLevelModal').modal('hide');
+                }
+                else {
+                    /*do something here*/
+                }
+            });
+
+        });
+
+        deleteAnnotationLevelForm.on('submit', function(e) {
+
+            e.stopImmediatePropagation();
+            e.preventDefault();
+
+            var url = "{{ url_for('add_experiment._deleteAnnotationLevel')}}";
+            var data = {
+                annotationId : selectedAnnotationId,
+            };
+            $.getJSON(url , data, function(response) {
+                if(response.success) {
+                    console.log(response);
+                    $(".annotation_level[value=" + selectedAnnotationId + "]").remove();
+                    $("hr[value=" + selectedAnnotationId + "]").remove();
+                    $('#deleteAnnotationLevel').modal('hide');
+                }
+                else {
+                    /*do something here*/
+                }
+            });
+
         });
 
         addLabelForm.on('submit', function(e) {
@@ -259,6 +371,13 @@
 
         });
 
+        function updateAnnotationLevel(selectedAnnotationId, name, description, levelNumber) {
+            selectedAnnotation = $(".annotation_level[value=" + selectedAnnotationId + "]");
+            selectedAnnotation.find('.annotationName').text(name);
+            selectedAnnotation.find('.annotationDescription').text(description);
+            selectedAnnotation.data('level',levelNumber);
+        }
+
         function deleteAsync(labelId, annotationId) {
             $(".labels[value= " + labelId + "]").remove();
             $('#deleteLabelModal').modal('hide');
@@ -267,7 +386,7 @@
 
             if(annotationLabelCollection.length == 0) {
 
-                var addMoreButton = annotationLevel.find(".annotationDescription .addMoreButtonClass button");
+                var addMoreButton = annotationLevel.find(".annotationDescriptionGrp .addMoreButtonClass button");
                 addMoreButton.remove();
                 var buttonAttributeDict = {
                     "type":         "button",
@@ -327,7 +446,7 @@
                 if it is the first label i.e. not labels
                 have been added so far then
                 remove the button in addFirstLabel and
-                add a button in annotationDescription
+                add a button in annotationDescriptionGrp
             */
             if($(annotationLabels).length == 1) {
 
@@ -343,7 +462,7 @@
                 };
 
                 var buttonToAdd = $("<button/>", buttonAttributeDict);
-                var descriptionClass = "." + annotation_levelClass + " .annotationDescription .addMoreButtonClass"
+                var descriptionClass = "." + annotation_levelClass + " .annotationDescriptionGrp .addMoreButtonClass"
                 buttonToAdd.appendTo(descriptionClass);
 
             }

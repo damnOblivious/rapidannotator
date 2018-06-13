@@ -157,10 +157,6 @@ def _addAnnotationLevel():
 @blueprint.route('/_addLabels', methods=['POST','GET'])
 def _addLabels():
 
-    import sys
-    from rapidannotator import app
-    app.logger.info("boox boox boox")
-
     annotationId = request.args.get('annotationId', None)
     labelName = request.args.get('labelName', None)
     labelKey = request.args.get('labelKey', None)
@@ -176,10 +172,6 @@ def _addLabels():
 
     labelId = label.id
 
-    app.logger.info("booz booz booz")
-    app.logger.info(labelId)
-    app.logger.info("boozy boozy boozy")
-
     response = {
         'success' : True,
         'labelId' : labelId,
@@ -192,6 +184,39 @@ def _deleteLabel():
 
     labelId = request.args.get('labelId', None)
     Label.query.filter_by(id=labelId).delete()
+
+    db.session.commit()
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)
+
+@blueprint.route('/_deleteAnnotationLevel', methods=['POST','GET'])
+def _deleteAnnotationLevel():
+
+    annotationId = request.args.get('annotationId', None)
+    AnnotationLevel.query.filter_by(id=annotationId).delete()
+
+    db.session.commit()
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)
+
+@blueprint.route('/_editAnnotationLevel', methods=['POST','GET'])
+def _editAnnotationLevel():
+
+    import sys
+    from rapidannotator import app
+
+    annotationId = request.args.get('annotationId', None)
+    annotationLevel = AnnotationLevel.query.filter_by(id=annotationId).first()
+
+    annotationLevel.name = request.args.get('annotationName', None)
+    annotationLevel.description = request.args.get('annotationDescription', None)
+    annotationLevel.level_number = request.args.get('annotationLevelNumber', None)
 
     db.session.commit()
     response = {
