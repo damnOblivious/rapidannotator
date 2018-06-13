@@ -54,3 +54,20 @@
 .btn-space {
     margin-right: 0.5em;
 }
+
+.btn-space-top {
+    margin-right: 0.5em;
+}
+
+.inline-title {
+    margin-right: 0.8em;
+}
+
+.edit-button-margin {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.wrapWord {
+    word-wrap:break-word;
+}
