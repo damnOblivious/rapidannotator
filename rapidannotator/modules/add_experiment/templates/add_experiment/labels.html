@@ -70,12 +70,12 @@
                 <div class="col-xs-12 container-fluid labelCollection">
                     {% for label in annotation_level.labels %}
                     <span class="labels" value={{label.id}}>
-                        <span class="col-xs-3 h5"> {{ label.name }} </span>
-                        <span class="col-xs-1 h5 pull-left"> {%- if label.key_binding -%} {{ label.key_binding }} {%- else -%} {{('default')}} {%- endif -%} </span>
+                        <span class="col-xs-3 h5 labelName"> {{ label.name }} </span>
+                        <span class="col-xs-1 h5 pull-left labelKey"> {%- if label.key_binding -%} {{ label.key_binding }} {%- else -%} {{('default')}} {%- endif -%} </span>
                         <span class="col-xs-1 glyphicon glyphicon-trash edit-button-margin"
                             data-toggle="modal" data-target="#deleteLabelModal"></span>
                         <span class="col-xs-1 glyphicon glyphicon-pencil edit-button-margin"
-                            data-toggle="modal" data-target="#editLabel"></span>
+                            data-toggle="modal" data-target="#editLabelModal"></span>
                     </span>
                     {% endfor %}
                 </div>
@@ -109,6 +109,41 @@
 </div>
 
 
+<!-- Edit-Label-Modal -->
+<div class="modal fade" id="editLabelModal" role="dialog" tabindex="-1"
+    aria-labelledby="editLabelModal" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Edit Label</h4>
+      </div>
+        <div class="modal-body">
+            <form id="editLabelForm" name="editLabelForm">
+
+                <b>Label Name</b>
+                <input type="text" name="labelName" maxlength="32" minlength="1"
+                    class="form-control validate" placeholder="Label Name">
+                <span class="help-block"><small>Label Name (should be precise and unambiguous). Max length : 32</small></span>
+
+                <b>Key Binding</b>
+                <input type="text" name="labelKey"
+                    class="form-control validate" placeholder="Key Binding(Optional)" maxlength="1">
+                <span class="help-block"><small>Key Binding Example : a.</small></span>
+
+                <div class="form-actions">
+                    <button type="submit" name="submit" value="" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Save') }}</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">{{ ('Cancel') }}</button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- Edit-Annotation-Level-Modal -->
 <div class="modal fade" id="editAnnotationLevelModal" role="dialog" tabindex="-1"
     aria-labelledby="editAnnotationLevelModal" aria-hidden="true">
@@ -122,7 +157,7 @@
             <form id="editAnnotationLevelForm" name="editAnnotationLevelForm">
 
                 <b>Annotation Level Name</b>
-                <input type="text" name="annotationName" maxlength="32" maxlength="32"
+                <input type="text" name="annotationName" maxlength="32" minlength="1"
                     class="form-control validate" placeholder="Annotation Level Name">
                 <span class="help-block"><small>Name of the annotation level: Example Gender, Age. Can't exceed 32 characters
                 </small></span>
@@ -248,25 +283,108 @@
 <script charset="utf-8" type="text/javascript">
     $(function() {
 
+        var editAnnotationLevelForm = $('#editAnnotationLevelForm');
+        var deleteAnnotationLevelForm = $('#deleteAnnotationLevelForm');
+        var editAnnotationLevelButton = $('.annotationDescriptionGrp .glyphicon-pencil');
+
         var addLabelForm = $('#addLabelForm');
         var addLabelButton = $('.addLabelButton');
         var deleteLabelForm = $('#deleteLabelForm');
-        var editLabelButton = '.labels .glyphicon-pencil, .labels .glyphicon-trash';
-        var editAnnotationLevelButton = $('.annotationDescriptionGrp .glyphicon-pencil');
-        var editAnnotationLevelForm = $('#editAnnotationLevelForm');
-        var deleteAnnotationLevelForm = $('#deleteAnnotationLevelForm');
+        var deleteLabelButton = '.labels .glyphicon-trash';
+        var editLabelButton = '.labels .glyphicon-pencil';
+        var editLabelForm = $('#editLabelForm');
 
         var selectedAnnotationId = -1;
         var selectedLabelId = -1;
 
-        $("body").on("click", editLabelButton, function() {
+        $("body").on("click", deleteLabelButton, function() {
             selectedLabelId = $(this).parent().attr('value');
             selectedAnnotationId = $(this).closest('.annotation_level').attr('value');
+        });
+
+        $("body").on("click", editLabelButton, function() {
+            selectedLabel = $(this).closest('.labels');
+            selectedLabelId = selectedLabel.attr('value');
+
+
+            labelName = selectedLabel.find('.labelName').text();
+            labelKey = selectedLabel.find('.labelKey').text();
+            labelKey = (labelKey != 'default') ? labelKey : "";
+
+            console.log(selectedLabelId, labelName, labelKey);
+
+            editLabelForm.find('input[name="labelName"]').val(labelName);
+            editLabelForm.find('input[name="labelKey"]').val(labelKey);
         });
 
         addLabelButton.on('click', function() {
             selectedAnnotationId = $(this).closest('.annotation_level').attr('value');
         });
+
+        addLabelForm.on('submit', function(e) {
+
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            var labelName = $('input[name="labelName"]').val();
+            var labelKey = $('input[name="labelKey"]').val();
+            var labelTuple = {
+                "labelName" : labelName,
+                "labelKey" : labelKey,
+                "labelId" : selectedAnnotationId,
+            };
+            addAsync(labelTuple);
+
+            $('#addLabelModal').modal('hide');
+            $('input[name="labelName"]').val("");
+            $('input[name="labelKey"]').val("");
+
+        });
+
+        deleteLabelForm.on('submit', function(e) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            var url = "{{ url_for('add_experiment._deleteLabel')}}";
+            var data = {
+                'labelId' : selectedLabelId,
+            };
+
+            $.getJSON(url , data, function(response) {
+                if(response.success) {
+                    deleteAsync(selectedLabelId, selectedAnnotationId);
+                }
+                else {
+                    /*do something here*/
+                }
+            });
+
+        });
+
+        editLabelForm.on('submit', function(e) {
+
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            name = editLabelForm.find('input[name="labelName"]').val();
+            key = editLabelForm.find('input[name="labelKey"]').val();
+
+            var url = "{{ url_for('add_experiment._editLabel')}}";
+            var data = {
+                labelId:   selectedLabelId,
+                labelName: name,
+                labelKey: key,
+            };
+
+            $.getJSON(url , data, function(response) {
+                if(response.success) {
+                    updateLabel(selectedLabelId, name, key);
+                    $('#editLabelModal').modal('hide');
+                }
+                else {
+                    /*do something here*/
+                }
+            });
+
+        });
+
 
         editAnnotationLevelButton.on('click', function() {
             selectedAnnotation = $(this).closest('.annotation_level');
@@ -332,48 +450,15 @@
 
         });
 
-        addLabelForm.on('submit', function(e) {
-
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            var labelName = $('input[name="labelName"]').val();
-            var labelKey = $('input[name="labelKey"]').val();
-            var labelTuple = {
-                "labelName" : labelName,
-                "labelKey" : labelKey,
-                "annotationId" : selectedAnnotationId,
-            };
-            console.log(labelTuple);
-            displayAndAddLabel(labelTuple);
-
-            $('#addLabelModal').modal('hide');
-            $('input[name="labelName"]').val("");
-            $('input[name="labelKey"]').val("");
-
-        });
-
-        deleteLabelForm.on('submit', function(e) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            var url = "{{ url_for('add_experiment._deleteLabel')}}";
-            var data = {
-                'labelId' : selectedLabelId,
-            };
-
-            $.getJSON(url , data, function(response) {
-                if(response.success) {
-                    deleteAsync(selectedLabelId, selectedAnnotationId);
-                }
-                else {
-                    /*do something here*/
-                }
-            });
-
-        });
+        function updateLabel(selectedLabelId, name, key) {
+            selectedLabel = $(".labels[value=" + selectedLabelId + "]");
+            selectedLabel.find('.labelName').text(name);
+            selectedLabel.find('.labelKey').text(key ? key : "default");
+        }
 
         function updateAnnotationLevel(selectedAnnotationId, name, description, levelNumber) {
             selectedAnnotation = $(".annotation_level[value=" + selectedAnnotationId + "]");
-            selectedAnnotation.find('.annotationName').text(name);
+            selectedAnnotation.find('.annotationName b').text(name);
             selectedAnnotation.find('.annotationDescription').text(description);
             selectedAnnotation.data('level',levelNumber);
         }
@@ -402,10 +487,6 @@
 
             }
         }
-
-        function displayAndAddLabel(labelTuple) {
-            addAsync(labelTuple);
-        };
 
         function displayAsync(labelTuple, newLabelId) {
 

@@ -208,15 +208,34 @@ def _deleteAnnotationLevel():
 @blueprint.route('/_editAnnotationLevel', methods=['POST','GET'])
 def _editAnnotationLevel():
 
-    import sys
-    from rapidannotator import app
-
     annotationId = request.args.get('annotationId', None)
     annotationLevel = AnnotationLevel.query.filter_by(id=annotationId).first()
 
     annotationLevel.name = request.args.get('annotationName', None)
     annotationLevel.description = request.args.get('annotationDescription', None)
     annotationLevel.level_number = request.args.get('annotationLevelNumber', None)
+
+    db.session.commit()
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)
+
+@blueprint.route('/_editLabel', methods=['POST','GET'])
+def _editLabel():
+
+
+    labelId = request.args.get('labelId', None)
+    label = Label.query.filter_by(id=labelId).first()
+
+    import sys
+    from rapidannotator import app
+    app.logger.info("speededddd up")
+    app.logger.info(labelId)
+
+    label.name = request.args.get('labelName', None)
+    label.key_binding = request.args.get('labelKey', None)
 
     db.session.commit()
     response = {
