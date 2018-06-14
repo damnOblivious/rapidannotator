@@ -30,7 +30,7 @@
         <button type="button" data-toggle="modal" data-target="#addAnnotationLevelModal"
             class="btn btn-primary btn-group btn-group-inline btn-space">{{ ('Add Annotation Level') }}</button>
 
-        <a href="{{ url_for('add_experiment.editLables', experimentId = experiment.id) }}" class="btn btn-success btn-group btn-group-inline btn-space">{{ ('Done') }}</a>
+        <a href="{{ url_for('add_experiment.index', experimentId = experiment.id) }}" class="btn btn-success btn-group btn-group-inline btn-space">{{ ('Done') }}</a>
 
         </div>
 
@@ -306,12 +306,9 @@
             selectedLabel = $(this).closest('.labels');
             selectedLabelId = selectedLabel.attr('value');
 
-
             labelName = selectedLabel.find('.labelName').text();
             labelKey = selectedLabel.find('.labelKey').text();
             labelKey = (labelKey != 'default') ? labelKey : "";
-
-            console.log(selectedLabelId, labelName, labelKey);
 
             editLabelForm.find('input[name="labelName"]').val(labelName);
             editLabelForm.find('input[name="labelKey"]').val(labelKey);
@@ -325,13 +322,14 @@
 
             e.stopImmediatePropagation();
             e.preventDefault();
-            var labelName = $('input[name="labelName"]').val();
-            var labelKey = $('input[name="labelKey"]').val();
+            var labelName = addLabelForm.find('input[name="labelName"]').val();
+            var labelKey = addLabelForm.find('input[name="labelKey"]').val();
             var labelTuple = {
                 "labelName" : labelName,
                 "labelKey" : labelKey,
-                "labelId" : selectedAnnotationId,
+                "annotationId" : selectedAnnotationId,
             };
+            console.log(labelTuple);
             addAsync(labelTuple);
 
             $('#addLabelModal').modal('hide');
@@ -497,12 +495,12 @@
 
             var nameSpan = $("<span/>", {
                 "text":     labelTuple['labelName'],
-                "class":    "col-xs-3 h5",
+                "class":    "col-xs-3 h5 labelName",
             });
 
             var keySpan = $("<span/>", {
                 "text":     labelTuple['labelKey'] ? labelTuple['labelKey'] : "default",
-                "class":   "col-xs-1 h5 pull-left",
+                "class":   "col-xs-1 h5 pull-left labelKey",
             });
 
             var trashIconSpan = $("<span/>", {
@@ -514,6 +512,7 @@
             var editIconSpan = $("<span/>", {
                 "class":   "col-xs-1 glyphicon glyphicon-pencil edit-button-margin",
                 "data-toggle":  "modal",
+                "data-target":  "#editLabelModal",
             });
 
             parentSpan.append(nameSpan, keySpan, trashIconSpan, editIconSpan);

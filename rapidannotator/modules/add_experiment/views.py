@@ -112,11 +112,6 @@ def editLables(experimentId):
     annotation_levels = experiment.annotation_levels
     annotationLevelForm = AnnotationLevelForm(experimentId = experimentId)
 
-    import sys
-    from rapidannotator import app
-    app.logger.info("heri fera")
-    app.logger.info(annotation_levels)
-
     return render_template('add_experiment/labels.html',
         experiment = experiment,
         annotation_levels = annotation_levels,
@@ -160,6 +155,11 @@ def _addLabels():
     annotationId = request.args.get('annotationId', None)
     labelName = request.args.get('labelName', None)
     labelKey = request.args.get('labelKey', None)
+
+    import sys
+    from rapidannotator import app
+    app.logger.info("speededddd up")
+    app.logger.info(annotationId)
 
     annotationLevel = AnnotationLevel.query.filter_by(id=annotationId).first()
     label = Label(
@@ -228,11 +228,6 @@ def _editLabel():
 
     labelId = request.args.get('labelId', None)
     label = Label.query.filter_by(id=labelId).first()
-
-    import sys
-    from rapidannotator import app
-    app.logger.info("speededddd up")
-    app.logger.info(labelId)
 
     label.name = request.args.get('labelName', None)
     label.key_binding = request.args.get('labelKey', None)
