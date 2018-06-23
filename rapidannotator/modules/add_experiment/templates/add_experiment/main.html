@@ -12,9 +12,6 @@
 {% block experiment_body %}
 
 <div class="container">
-</div>
-
-<div class="container">
     <h5><a>Home</a> > <a>Add Experiments</a></h5>
 </div>
 
@@ -61,6 +58,74 @@
 
 </div>
 
+<div class="container">
+    <div>
+        <div style="display: inline-block">
+            <h3 style="display: inline"><b>{{ ('Upload Files') }}</b></h3>
+        </div>
+
+        <div id="fileContainer" class="pull-right" style="display: inline-block">
+            <button type="button" id="chooseFiles" class="btn btn-default btn-group btn-group-inline btn-space">
+                <span class="glyphicon glyphicon glyphicon-file"></span>
+                Choose files
+            </button>
+
+            <button type="button" id="uploadfiles" class="btn btn-primary btn-group btn-group-inline btn-space">
+                <span class="glyphicon glyphicon-upload"></span>
+                Start Upload
+            </button>
+        </div>
+
+    </div>
+    <div id="filelist">Your browser doesn't have Flash, Silverlight or HTML5 support.</div>
+
+</div>
+
+<!-- <div class="container">
+    <div id="filelist" class="container">
+    </div>
+</div>
+ -->
+
+<div class ="errorLog hidden-element alert alert-dismissible fixed alert-warning">
+    <div class ="container" role="alert">
+        <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span></button>
+            <strong>  </strong>
+    </div>
+</div>
+
+<div class="container">
+    <table id="fileTable" class="table table-hover table-striped">
+        <thead>
+            <tr class="">
+                <th style="width: 10.0%">{{ ('File') }}</th>
+                <th style="width: 20.0%">{{ ('Name') }}</th>
+                <th style="width: 67.0%">{{ ('Description') }}</th>
+                <th style="width: 3.0%"></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <!-- {{experiment.files}} -->
+
+            {% for file in experiment.files | reverse %}
+                {%- set experiment_url = url_for('view_experiment.index', experimentId = experiment.id) %}
+                <tr class='clickable-row' value={{file.id}} data-href="">
+                <td><img class="displayImages" src="{{url_for('static', filename = 'img/videoIcon.png')}}" alt="Red Hen Logo">
+                <td>{{file.url}}</td>
+                <td class="fileCaption"><p>{%- if file.caption -%} {{ file.caption }} {%- else -%} {{('No caption provided')}} {%- endif -%}</p></td>
+                <td>
+                    <button class="deleteFileButton pull-right close" type="button"
+                    data-toggle="modal" data-target="#deleteFileModal">&times;</button>
+                </td>
+                </tr>
+            {% endfor %}
+
+    </tbody>
+</table>
+</div>
+
 <div class="modal fade" id="displayTimeModalId" role="dialog" tabindex="-1"
     aria-labelledby="displayTimeModalId" aria-hidden="true" data-backdrop="static"
     data-keyboard="false">
@@ -93,10 +158,322 @@
   </div>
 </div>
 
-
-<div class="container">
-    {{experiment.display_time}}
+<!-- Delete-File-Modal -->
+<div class="modal fade" id="deleteFileModal" role="dialog" tabindex="-1"
+    aria-labelledby="deleteFileModal" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Delete this file?</h4>
+      </div>
+        <div class="modal-body">
+            <form method="POST" id="deleteFileForm" name="deleteFileForm">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Delete') }}</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
+  </div>
 </div>
+
+<script charset="utf-8" type="text/javascript">
+$(function() {
+    /* TODO ADD TICK AFTER UPLOADED FOR 3-5 SECS */
+    /* TODO CHANGE TO PARAM AND SEND CAPTION */
+    /* TODO change multipart_params TO params {if multipart_params is deprecated}*/
+    /* TODO DONE MAKE CAPTION EDITABLE */
+    /* TODO DONE ADD UI AND BACKEND TO REMOVE */
+    /* TODO DONE REMOVE BUTTON */
+    /* TODO DONE Enhance Error UI */
+
+    var closeErrorButton = $('.errorLog').find(".container").find("button");
+    var deleteFileButton = '.deleteFileButton';
+    var currentDeleteFileId = -1;
+    var currentEditFileId = -1;
+    var deleteFileForm = $('#deleteFileForm');
+    var editing  = false;
+
+    if (document.getElementById && document.createElement) {
+    	var butt = document.createElement('BUTTON');
+        butt.classList.add("saveEditButton");
+    	var buttext = document.createTextNode('Ready!');
+    	butt.appendChild(buttext);
+    	butt.onclick = saveEdit;
+    }
+
+    function catchIt(e) {
+    	if (editing) return;
+    	if (!document.getElementById || !document.createElement) return;
+    	if (!e) var obj = window.event.srcElement;
+    	else var obj = e.target;
+    	while (obj.nodeType != 1) {
+    		obj = obj.parentNode;
+    	}
+    	if (obj.tagName == 'TEXTAREA' || obj.tagName == 'A') return;
+    	while (obj.nodeName != 'P' && obj.nodeName != 'HTML') {
+    		obj = obj.parentNode;
+    	}
+    	if (obj.nodeName == 'HTML') return;
+    	var x = obj.innerHTML;
+    	var y = document.createElement('TEXTAREA');
+        y.style.width = obj.offsetWidth + "px";
+        y.style.height = obj.offsetHeight + "px";
+    	var z = obj.parentNode;
+    	z.insertBefore(y,obj);
+    	z.insertBefore(butt,obj);
+    	z.removeChild(obj);
+    	y.value = x;
+    	y.focus();
+    	editing = true;
+    }
+
+    function saveEdit() {
+    	var area = document.getElementsByTagName('TEXTAREA')[0];
+        currentEditFileId = $("TEXTAREA").closest("tr").attr('value');
+    	var y = document.createElement('P');
+    	var z = area.parentNode;
+    	y.innerHTML = area.value;
+    	z.insertBefore(y,area);
+    	z.removeChild(area);
+    	z.removeChild(document.getElementsByClassName('saveEditButton')[0]);
+        if($.isNumeric(currentEditFileId)) {
+            saveCaptionInDatabase(currentEditFileId, y.innerHTML);
+        }
+    	editing = false;
+    }
+
+    function saveCaptionInDatabase(fileId, caption) {
+        var fileCaption = $('#fileTable tbody tr[value=' + file.id + '] .fileCaption p').text();
+        console.log(fileCaption);
+        if( fileCaption == 'No caption provided' || fileCaption == '') return;
+
+        console.log("saving");
+
+        var url = "{{ url_for('add_experiment._updateFileCaption')}}";
+        var data = {
+            'experimentCategory' : '{{ experiment.category }}',
+            'fileId' : currentDeleteFileId,
+            'caption' : fileCaption,
+        };
+
+        $.getJSON(url , data, function(response) {
+            if(response.success) {
+            }
+            else {
+                /*do something here*/
+            }
+        });
+    }
+
+    document.onclick = catchIt;
+
+    deleteFileForm.on('submit', function(e) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        if($.isNumeric(currentDeleteFileId)) {
+            deleteFileFromDatabase();
+        } else {
+            deleteFileFromPlUpload();
+        }
+    });
+
+    function deleteFileFromPlUpload() {
+        uploader.removeFile(currentDeleteFileId);
+    }
+
+    function deleteFileFromDatabase() {
+        var url = "{{ url_for('add_experiment._deleteFile')}}";
+        var data = {
+            'experimentCategory' : '{{ experiment.category }}',
+            'fileId' : currentDeleteFileId,
+        };
+
+        $.getJSON(url , data, function(response) {
+            if(response.success) {
+                $("tr[value=" + currentDeleteFileId + "]").remove();
+                $('#deleteFileModal').modal('hide');
+            }
+            else {
+                /*do something here*/
+            }
+        });
+    }
+
+    $("body").on("click", deleteFileButton, function() {
+        currentDeleteFileId = $(this).closest("tr").attr('value');
+        // console.log("dleeo", currentDeleteFileId);
+    });
+
+    closeErrorButton.on('click', function() {
+            $(".errorLog").find(".container").find("strong").text("");
+            $(".hidden-element").hide();
+        });
+
+    function addFileToTable(file) {
+
+        var fileTableBody = $('#fileTable').find("tbody");
+        var rowAttributeDict = {
+            "class" :           "clickable-row",
+            "value" :           file.id,
+        }
+
+        var row = $("<tr/>", rowAttributeDict);
+        cell1 = $("<td/>", {
+            "style" :       "width: 10.0%"
+        });
+        cell2 = $("<td/>", {
+            "style" :       "width: 20.0%"
+        });
+        cell3 = $("<td/>", {
+            "style" :       "width: 67.0%",
+            "class" :       "fileCaption",
+        });
+
+        cell4 = $("<td/>", {
+            "style" :     "width: 3.0%"
+        });
+
+        var imgAttributeDict = {
+            "class" :        "displayImages",
+            "src" :          "{{url_for('static', filename = 'img/videoIcon.png')}}",
+            "alt" :          "Red Hen Logo",
+        };
+        var imageToAdd = $("<img/>", imgAttributeDict);
+
+        var cell3Text = "<p>No caption provided</p>";
+        var buttonAttributeDict = {
+            "type" :            "button",
+            "class" :           "deleteFileButton pull-right close",
+            "data-toggle" :     "modal",
+            "data-target" :     "#deleteFileModal",
+        };
+        var buttonToAdd = $("<button/>", buttonAttributeDict);
+        buttonToAdd.append("&times;");
+
+        imageToAdd.appendTo(cell1);
+        cell2.append(file.name);
+        cell3.append(cell3Text);
+        buttonToAdd.appendTo(cell4);
+        row.append(cell1,cell2,cell3,cell4);
+        fileTableBody.prepend(row);
+
+
+    }
+
+    uploader = new plupload.Uploader({
+        runtimes :             'silverlight,html5,flash,silverlight,html4',
+        url :                  "{{ url_for('add_experiment._uploadFiles') }}",
+        flash_swf_url :        "{{ url_for('static', filename='js/Moxie.swf') }}",
+        silverlight_xap_url :  "{{ url_for('static', filename='js/Moxie.xap') }}",
+        browse_button :        "chooseFiles",
+        container :            document.getElementById('fileContainer'),
+        multipart :            true,
+        multipart_params : {
+            "experimentId" : {{ experiment.id }},
+        },
+
+        filters : {
+            mime_types: []
+            },
+         
+        init: {
+            PostInit: function(up, info) {
+                experimentType = "{{ experiment.category }}";
+                switch (experimentType) {
+
+                    case 'text':
+                        fileTypes = {
+                            mime_types: [
+                                {title : "Text files", extensions : "plain,html,css,csv,rtf"},
+                            ]
+                        }
+        				break;
+
+                    case 'image':
+                        fileTypes = {
+                            mime_types: [
+                                {title : "Image files", extensions : "jpg,gif,png" },
+                            ]
+                        }
+        				break;
+
+        			case 'audio':
+                        fileTypes = {
+                            mime_types: [
+                                {title : "Audio Files", extensions : "mp3,wma,mp2,wav,aiff,aif,m4a,ra,dss"},
+                            ]
+                        }
+        				break;
+
+                    case 'video':
+                        fileTypes = {
+                            mime_types: [
+                                {title : "Video files", extensions : "mov,mp4,wmv,rm"},
+                            ]
+                        }
+        				break;
+                    }
+
+                up.setOption('filters', fileTypes);
+                document.getElementById('filelist').innerHTML = '';
+
+                document.getElementById('uploadfiles').onclick = function() {
+                    uploader.start();
+                    return false;
+                };
+            },
+
+            BeforeUpload: function (up, file) {
+                var fileCaption = $('#fileTable tbody tr[value=' + file.id + '] .fileCaption p').text();
+                if( fileCaption != 'No caption provided' && fileCaption != '') {
+                    up.setOption('multipart_params', {fileCaption : fileCaption});
+                }
+            },
+
+            UploadFile: function(up, file) {
+            },
+
+            FilesAdded: function(up, files) {
+                plupload.each(files, function(file) {
+                    // document.getElementById('filelist').innerHTML += '<div id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
+                    addFileToTable(file);
+                });
+            },
+
+            FileUploaded: function(up, file, response) {
+                // Called when file has finished uploading
+                // console.log(response);
+                // log('[FileUploaded] File:', file, "Info:", info);
+            },
+
+            FilesRemoved: function(up, files) {
+                plupload.each(files, function(file) {
+                    $("tr[value=" + currentDeleteFileId + "]").remove();
+                    $('#deleteFileModal').modal('hide');
+                });
+            },
+
+            UploadProgress: function(up, file) {
+                // document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
+            },
+
+            Error: function(up, err) {
+                $(".errorLog").find(".container").find("strong").append("Error #" + err.code + ": " + err.message+ "<br/>");
+                $(".hidden-element").show();
+                console.log("fooo");
+            }
+        }
+    });
+    uploader.init();
+});
+
+</script>
+
 
 <script charset="utf-8" type="text/javascript">
     $(function() {

@@ -6,7 +6,7 @@
   width: auto;
 }
 
-#message {
+/* #message {
     position: fixed;
     top: 0;
     left: 0;
@@ -14,7 +14,7 @@
 }
 #inner-message {
     margin: 0 auto;
-}
+} */
 
 .horizontal-line {
     border-top: 1px solid #CCCCCC;
@@ -69,5 +69,28 @@
 }
 
 .wrapWord {
+    word-wrap:break-word;
+}
+
+.displayImages {
+    height : 5em;
+    width : 5em;
+}
+
+.alert.fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    border-radius: 0px;
+}
+
+.hidden-element {
+    display: none;
+}
+
+#fileTable {
+    table-layout: fixed;
     word-wrap:break-word;
 }

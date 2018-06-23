@@ -1,16 +1,20 @@
 from flask import render_template, flash, redirect, url_for, request, jsonify, \
     current_app, g, abort, jsonify, session
 from flask_babelex import lazy_gettext as _
+from werkzeug.utils import secure_filename
 
 from rapidannotator import db
 from rapidannotator.models import User, Experiment, AnnotatorAssociation, \
-    DisplayTime, AnnotationLevel, Label
+    DisplayTime, AnnotationLevel, Label, TextFile, File
 from rapidannotator.modules.add_experiment import blueprint
 from rapidannotator.modules.add_experiment.forms import AnnotationLevelForm
 from rapidannotator import bcrypt
 
 from flask_login import current_user, login_required
 from flask_login import login_user, logout_user, current_user
+
+
+import os
 
 '''
 @blueprint.before_request
@@ -225,12 +229,105 @@ def _editAnnotationLevel():
 @blueprint.route('/_editLabel', methods=['POST','GET'])
 def _editLabel():
 
-
     labelId = request.args.get('labelId', None)
     label = Label.query.filter_by(id=labelId).first()
 
     label.name = request.args.get('labelName', None)
     label.key_binding = request.args.get('labelKey', None)
+
+    db.session.commit()
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)
+
+''' extract all text from the text file and store in database '''
+@blueprint.route('/_uploadFiles', methods=['POST','GET'])
+def _uploadFiles():
+
+    import sys
+    from rapidannotator import app
+    app.logger.info("inFunc")
+    app.logger.info(request.form)
+    app.logger.info(request.data)
+
+    response = "great"
+
+    if request.method == 'POST':
+
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return response
+        ''' also check for the allowed filename '''
+        if file:
+            filename = secure_filename(file.filename)
+            filePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filePath)
+            experimentId = request.form.get('experimentId', None)
+            fileCaption = request.form.get('fileCaption', None)
+
+            experiment = Experiment.query.filter_by(id=experimentId).first()
+            if experiment.category == 'text':
+                pass
+            else:
+                newFile = File(
+                    url=filePath,
+                )
+                experiment.files.append(newFile)
+
+            newFile.caption = fileCaption
+            db.session.commit()
+
+            return response
+
+    response = "greatNahiHai"
+
+    return jsonify(response)
+
+''' delete from folder too '''
+@blueprint.route('/_deleteFile', methods=['POST','GET'])
+def _deleteFile():
+
+    experimentCategory = request.args.get('experimentCategory', None)
+    fileId = request.args.get('fileId', None)
+
+    if experimentCategory == 'text':
+        TextFile.query.filter_by(id=fileId).delete()
+    else:
+        File.query.filter_by(id=fileId).delete()
+
+    db.session.commit()
+    response = {
+        'success' : True,
+    }
+
+
+    return jsonify(response)
+
+@blueprint.route('/_updateFileCaption', methods=['POST','GET'])
+def _updateFileCaption():
+
+    import sys
+    from rapidannotator import app
+    app.logger.info("speededddd up")
+
+
+    experimentCategory = request.args.get('experimentCategory', None)
+    fileId = request.args.get('fileId', None)
+
+    app.logger.info(request.form)
+
+    if experimentCategory == 'text':
+        currentFile = TextFile.query.filter_by(id=fileId).first()
+    else:
+        currentFile = File.query.filter_by(id=fileId).first()
+
+    currentFile.caption = request.args.get('caption', None)
 
     db.session.commit()
     response = {
