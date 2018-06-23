@@ -94,3 +94,8 @@
     table-layout: fixed;
     word-wrap:break-word;
 }
+
+.completeIcon {
+    height : 1.5em;
+    width : 1.5em;
+}

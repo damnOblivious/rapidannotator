@@ -112,7 +112,9 @@
             {% for file in experiment.files | reverse %}
                 {%- set experiment_url = url_for('view_experiment.index', experimentId = experiment.id) %}
                 <tr class='clickable-row' value={{file.id}} data-href="">
-                <td><img class="displayImages" src="{{url_for('static', filename = 'img/videoIcon.png')}}" alt="Red Hen Logo">
+                <td>
+                    <img class="displayImages" src="{{url_for('static', filename = 'img/videoIcon.png')}}" alt="Red Hen Logo">
+                </td>
                 <td>{{file.url}}</td>
                 <td class="fileCaption"><p>{%- if file.caption -%} {{ file.caption }} {%- else -%} {{('No caption provided')}} {%- endif -%}</p></td>
                 <td>
@@ -183,9 +185,11 @@
 
 <script charset="utf-8" type="text/javascript">
 $(function() {
-    /* TODO ADD TICK AFTER UPLOADED FOR 3-5 SECS */
-    /* TODO CHANGE TO PARAM AND SEND CAPTION */
+    /* TODO UPDATE IMAGE */
     /* TODO change multipart_params TO params {if multipart_params is deprecated}*/
+    /* TODO DONE ADD TICK AFTER UPLOADED FOR 3-5 SECS */
+    /* TODO DONE UPDATE ID */
+    /* TODO DONE SEND CAPTION */
     /* TODO DONE MAKE CAPTION EDITABLE */
     /* TODO DONE ADD UI AND BACKEND TO REMOVE */
     /* TODO DONE REMOVE BUTTON */
@@ -446,9 +450,20 @@ $(function() {
             },
 
             FileUploaded: function(up, file, response) {
-                // Called when file has finished uploading
-                // console.log(response);
-                // log('[FileUploaded] File:', file, "Info:", info);
+                var uploadedRow = $("tr[value=" + file.id + "]");
+                var imageColumn = uploadedRow.find('td:first-child');
+
+                var imgAttributeDict = {
+                    "class" :        "completeIcon",
+                    "src" :          "{{url_for('static', filename = 'img/uploadComplete.jpeg')}}",
+                    "alt" :          "Upload Complete",
+                };
+                var uploadCompleteIcon = $("<img/>", imgAttributeDict);
+                uploadCompleteIcon.appendTo(imageColumn);
+                uploadCompleteIcon.fadeOut(15000);
+
+                var serverResponse = JSON.parse(response.response);
+                $("tr[value=" + file.id + "]").attr("value", serverResponse.fileId);
             },
 
             FilesRemoved: function(up, files) {

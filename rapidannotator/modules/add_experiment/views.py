@@ -242,7 +242,14 @@ def _editLabel():
 
     return jsonify(response)
 
-''' extract all text from the text file and store in database '''
+'''
+    TODO
+    .. extract all text from the text file and store in database
+    .. check for the allowed filename
+    .. delete from folder too
+'''
+
+
 @blueprint.route('/_uploadFiles', methods=['POST','GET'])
 def _uploadFiles():
 
@@ -251,8 +258,6 @@ def _uploadFiles():
     app.logger.info("inFunc")
     app.logger.info(request.form)
     app.logger.info(request.data)
-
-    response = "great"
 
     if request.method == 'POST':
 
@@ -283,7 +288,14 @@ def _uploadFiles():
             newFile.caption = fileCaption
             db.session.commit()
 
-            return response
+
+            response = {
+            'success' : True,
+            'fileId' : newFile.id,
+            'fileUrl' : newFile.url,
+            }
+
+            return jsonify(response)
 
     response = "greatNahiHai"
 
