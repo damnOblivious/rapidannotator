@@ -166,26 +166,32 @@ class Experiment(db.Model):
     ..  details of duration of the display time of the audio / video.
     """
     display_time = db.relationship("DisplayTime", uselist=False,
-                            cascade='all, delete-orphan')
+                    cascade='all, delete-orphan', passive_deletes=True)
 
     """ One to Many relation
     ..  For all types of Experiments:
     ..  list of the annoatation levels that are associated with
     ..  that experiment.
     """
-    annotation_levels = db.relationship("AnnotationLevel", cascade='all, delete-orphan')
+    annotation_levels = db.relationship("AnnotationLevel", cascade='all, delete-orphan',
+                        passive_deletes=True
+    )
 
     """ One to Many relation
     ..  For Text Experiments:
     ..  the text content for each file.
     """
-    text_file = db.relationship("TextFile", cascade='all, delete-orphan')
+    text_files = db.relationship("TextFile", cascade='all, delete-orphan',
+            passive_deletes=True
+    )
 
     """ One to Many relation
     ..  For Images / Audio / Video Experiments:
     ..  the link / url / path to the actual content of each file.
     """
-    file = db.relationship("File", cascade='all, delete-orphan')
+    files = db.relationship("File", cascade='all, delete-orphan',
+            passive_deletes=True
+    )
 
     def __str__(self):
         """Representation."""
@@ -213,7 +219,7 @@ class AnnotationLevel(db.Model):
 
     '''the experiment with which the this Annotation Level is associated.'''
     experiment_id = db.Column(Integer, db.ForeignKey(
-        'Experiment.id'), primary_key=True
+        'Experiment.id',  ondelete='CASCADE')
     )
 
     ''' name
@@ -310,7 +316,7 @@ class TextFile(db.Model):
 
     '''the experiment with which the this text file is associated.'''
     experiment_id = db.Column(Integer, db.ForeignKey(
-        'Experiment.id'), primary_key=True
+        'Experiment.id', ondelete='CASCADE')
     )
 
     ''' caption
@@ -351,7 +357,7 @@ class File(db.Model):
 
     '''the experiment with which the this text file is associated.'''
     experiment_id = db.Column(Integer, db.ForeignKey(
-        'Experiment.id'), primary_key=True
+        'Experiment.id', ondelete='CASCADE')
     )
 
     ''' caption
@@ -389,7 +395,7 @@ class DisplayTime(db.Model):
 
     '''the experiment with which the duration is associated.'''
     experiment_id = db.Column(Integer, db.ForeignKey(
-        'Experiment.id'), primary_key=True
+        'Experiment.id', ondelete='CASCADE')
     )
 
     ''' before_time
