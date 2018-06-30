@@ -34,6 +34,12 @@ def index(experimentId):
     experiment = Experiment.query.filter_by(id=experimentId).first()
     owners = experiment.owners
     annotators = experiment.annotators
+    '''
+        ..  there is no need to send the all the details
+            of annotator like start / end / current file
+            for annotation. So just send username of the
+            annotator.
+    '''
     annotators = [assoc.annotator for assoc in annotators]
 
     notOwners = [x for x in users if x not in owners]
@@ -71,8 +77,8 @@ def _addDisplayTimeDetails():
 @blueprint.route('/_addOwner', methods=['GET','POST'])
 def _addOwner():
 
-    username = request.args['userName']
-    experimentId = request.args['experimentId']
+    username = request.args.get('userName', None)
+    experimentId = request.args.get('experimentId', None)
 
     '''do in try catch'''
     experiment = Experiment.query.filter_by(id=experimentId).first()
@@ -82,6 +88,8 @@ def _addOwner():
     '''end try catch'''
     response = {
         'success' : True,
+        'ownerId' : user.id,
+        'ownerFullname' : user.fullname,
     }
 
     return jsonify(response)
@@ -89,8 +97,8 @@ def _addOwner():
 @blueprint.route('/_addAnnotator', methods=['GET','POST'])
 def _addAnnotator():
 
-    username = request.args['userName']
-    experimentId = request.args['experimentId']
+    username = request.args.get('userName', None)
+    experimentId = request.args.get('experimentId', None)
 
     '''do in try catch'''
     experiment = Experiment.query.filter_by(id=experimentId).first()
@@ -100,10 +108,14 @@ def _addAnnotator():
     experimentAnnotator.experiment = experiment
     experimentAnnotator.annotator = user
     db.session.commit()
+
+
     '''end try catch'''
 
     response = {
         'success' : True,
+        'annotatorId' : user.id,
+        'annotatorFullname' : user.fullname,
     }
 
     return jsonify(response)
@@ -153,6 +165,7 @@ def _addAnnotationLevel():
         errors = errors,
     )
 
+''' TODO no 2 labels should have same keybinding '''
 @blueprint.route('/_addLabels', methods=['POST','GET'])
 def _addLabels():
 
@@ -342,6 +355,114 @@ def _updateFileCaption():
     currentFile.caption = request.args.get('caption', None)
 
     db.session.commit()
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)
+
+@blueprint.route('/viewSettings/<int:experimentId>')
+def viewSettings(experimentId):
+
+    users = User.query.all()
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+    owners = experiment.owners
+    ''' send all the details of each annotator. '''
+    annotatorDetails = experiment.annotators
+    annotators = [assoc.annotator for assoc in annotatorDetails]
+
+    notOwners = [x for x in users if x not in owners]
+    notAnnotators = [x for x in users if x not in annotators]
+
+    import sys
+    from rapidannotator import app
+    if experiment.category == 'text':
+        pass
+    else:
+        xxx = len(experiment.files)
+    app.logger.info("speededddd up")
+    app.logger.info(xxx)
+
+
+    return render_template('add_experiment/settings.html',
+        users = users,
+        experiment = experiment,
+        owners = owners,
+        notOwners = notOwners,
+        notAnnotators = notAnnotators,
+        annotatorDetails = annotatorDetails,
+    )
+
+@blueprint.route('/_deleteAnnotator', methods=['POST','GET'])
+def _deleteAnnotator():
+
+    annotatorId = request.args.get('annotatorId', None)
+    experimentId = request.args.get('experimentId', None)
+
+    experimentAnnotator = AnnotatorAssociation.query.filter_by(
+                            experiment_id = experimentId,
+                            user_id = annotatorId)
+    experimentAnnotator.delete()
+
+    db.session.commit()
+
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)
+
+@blueprint.route('/_editAnnotator', methods=['POST','GET'])
+def _editAnnotator():
+
+    import sys
+    from rapidannotator import app
+    app.logger.info("hoollllllllll")
+
+    annotatorId = request.args.get('annotatorId', None)
+    experimentId = request.args.get('experimentId', None)
+    annotatorDetails = AnnotatorAssociation.query.filter_by(
+                        experiment_id=experimentId,
+                        user_id=annotatorId).first()
+
+    annotatorDetails.start = request.args.get('start', annotatorDetails.start)
+    annotatorDetails.end = request.args.get('end', annotatorDetails.end)
+
+    db.session.commit()
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)
+
+@blueprint.route('/_deleteOwner', methods=['POST','GET'])
+def _deleteOwner():
+
+    ownerId = request.args.get('ownerId', None)
+    experimentId = request.args.get('experimentId', None)
+    user = User.query.filter_by(id=ownerId).first()
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+    experiment.owners.remove(user)
+
+    db.session.commit()
+
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)
+
+
+@blueprint.route('/_deleteExperiment', methods=['POST','GET'])
+def _deleteExperiment():
+
+    experimentId = request.args.get('experimentId', None)
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+    experiment.owners = []
+    db.session.delete(experiment)
+    db.session.commit()
+
+
     response = {
         'success' : True,
     }

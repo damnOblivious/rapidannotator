@@ -22,6 +22,14 @@
     </div>
 
     <div class="pull-right" style="display: inline-block">
+        {%- set viewSettings = url_for('add_experiment.viewSettings', experimentId = experiment.id) %}
+
+        <a id="addLableButtonId" href="{{ viewSettings }}" value="{{ viewSettings }}"
+            class="btn btn-primary btn-group btn-group-inline btn-space">
+            {{ ('Settings') }}
+            <span class="glyphicon glyphicon-cog"></span>
+        </a>
+
         {%- set addLablesUrl = url_for('add_experiment.editLables', experimentId = experiment.id) %}
 
         <a id="addLableButtonId" href="{{ addLablesUrl }}" value="{{ addLablesUrl }}"
