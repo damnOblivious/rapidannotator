@@ -15,9 +15,9 @@ db = SQLAlchemy()
 ExperimentOwner = db.Table(
     'ExperimentOwner',
     db.Column('User_id', db.Integer, db.ForeignKey(
-        'User.id'), primary_key=True),
+        'User.id')),
     db.Column('Experiment_id', db.Integer, db.ForeignKey(
-        'Experiment.id'), primary_key=True)
+        'Experiment.id'))
 )
 
 """User data model."""
@@ -25,7 +25,7 @@ class User(UserMixin, db.Model):
 
     __tablename__ = "User"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     """Lower-case username to assert uniqueness."""
     username = db.Column(db.String(255), nullable=False, unique=True)
@@ -99,15 +99,15 @@ class AnnotatorAssociation(db.Model):
 
     __tablename__ = 'AnnotatorAssociation'
 
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
     '''the experiment with which user is associated.'''
     experiment_id = db.Column(Integer, db.ForeignKey(
-        'Experiment.id'), primary_key=True
-    )
+        'Experiment.id', ondelete='CASCADE'))
 
     '''the user associated with this experiment.'''
     user_id = db.Column(Integer, db.ForeignKey(
-    'User.id'), primary_key=True
-    )
+    'User.id', ondelete='CASCADE'))
 
     start = db.Column(db.Integer, nullable=False, server_default="0")
     end = db.Column(db.Integer, nullable=False, server_default="-1")
@@ -117,9 +117,10 @@ class AnnotatorAssociation(db.Model):
     ..  from an AnnotatorAssociation instance
     ..  to an Experiment instance
     """
-    experiment = db.relationship('Experiment',
-                lazy=True, backref=db.backref('annotators',
-                lazy=True)
+    experiment = db.relationship('Experiment', uselist=False,
+                lazy=True, backref=db.backref(
+                    'annotators', cascade='all, delete-orphan',
+                    passive_deletes=True, lazy=True)
     )
 
 class Experiment(db.Model):
@@ -127,7 +128,7 @@ class Experiment(db.Model):
 
     __tablename__ = "Experiment"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     """Name of the Experiment"""
     name = db.Column(db.String(255), nullable=False, unique=True)
@@ -173,8 +174,8 @@ class Experiment(db.Model):
     ..  list of the annoatation levels that are associated with
     ..  that experiment.
     """
-    annotation_levels = db.relationship("AnnotationLevel", cascade='all, delete-orphan',
-                        passive_deletes=True
+    annotation_levels = db.relationship("AnnotationLevel",
+                            cascade='all, delete-orphan', passive_deletes=True
     )
 
     """ One to Many relation
@@ -219,7 +220,7 @@ class AnnotationLevel(db.Model):
 
     '''the experiment with which the this Annotation Level is associated.'''
     experiment_id = db.Column(Integer, db.ForeignKey(
-        'Experiment.id',  ondelete='CASCADE')
+        'Experiment.id', ondelete='CASCADE')
     )
 
     ''' name
