@@ -77,6 +77,14 @@ class User(UserMixin, db.Model):
                 lazy=True)
     )
 
+    """ One to Many relation
+    ..  For User:
+    ..  list of the AnnotationInfo associated with this user.
+    """
+    annotationInfo = db.relationship("AnnotationInfo", cascade='all, delete-orphan',
+                passive_deletes=True
+    )
+
     def __str__(self):
         """Representation."""
         return 'User <id={0.id}, \
@@ -182,16 +190,16 @@ class Experiment(db.Model):
     ..  For Text Experiments:
     ..  the text content for each file.
     """
-    text_files = db.relationship("TextFile", cascade='all, delete-orphan',
-            passive_deletes=True
+    text_files = db.relationship("TextFile", lazy='dynamic',
+            cascade='all, delete-orphan', passive_deletes=True
     )
 
     """ One to Many relation
     ..  For Images / Audio / Video Experiments:
     ..  the link / url / path to the actual content of each file.
     """
-    files = db.relationship("File", cascade='all, delete-orphan',
-            passive_deletes=True
+    files = db.relationship("File", lazy='dynamic',
+            cascade='all, delete-orphan', passive_deletes=True
     )
 
     def __str__(self):
@@ -245,9 +253,17 @@ class AnnotationLevel(db.Model):
 
     """ One to Many relation
     ..  For AnnotationLevel:
-    ..  list of the labels associated with that annotation level.
+    ..  list of the labels associated with this annotation level.
     """
     labels = db.relationship("Label", cascade='all, delete-orphan',
+                passive_deletes=True
+    )
+
+    """ One to Many relation
+    ..  For AnnotationLevel:
+    ..  list of the AnnotationInfo associated with this annotation level.
+    """
+    annotationInfo = db.relationship("AnnotationInfo", cascade='all, delete-orphan',
                 passive_deletes=True
     )
 
@@ -293,6 +309,14 @@ class Label(db.Model):
     ..  when User will press that key :
     '''
     key_binding = db.Column(db.String(1), nullable=False, server_default='')
+
+    """ One to Many relation
+    ..  For Label:
+    ..  list of the AnnotationInfo associated with this label.
+    """
+    annotationInfo = db.relationship("AnnotationInfo", cascade='all, delete-orphan',
+                passive_deletes=True
+    )
 
     def __str__(self):
         """Representation."""
@@ -372,6 +396,14 @@ class File(db.Model):
     '''
     url = db.Column(db.String(1024), nullable=False, server_default='')
 
+    """ One to Many relation
+    ..  For File:
+    ..  list of the AnnotationInfo associated with this file.
+    """
+    annotationInfo = db.relationship("AnnotationInfo", cascade='all, delete-orphan',
+                passive_deletes=True
+    )
+
     def __str__(self):
         """Representation."""
         return 'File <id={0.id}, \
@@ -430,3 +462,46 @@ class DisplayTime(db.Model):
                 Experiment={0.experiment_id}, \
                 before_time={0.before_time}, \
                 after_time={0.after_time}>'.format(self)
+
+"""
+    AnnotationInfo of an annoatation level, user, file.
+"""
+class AnnotationInfo(db.Model):
+    __tablename__ = 'AnnotationInfo'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    '''the annotation with which the this AnnotationInfo is associated.'''
+    annotationLevel_id = db.Column(Integer, db.ForeignKey(
+        'AnnotationLevel.id', ondelete='CASCADE')
+    )
+
+    '''the annotator with which the this AnnotationInfo is associated.'''
+    user_id = db.Column(Integer, db.ForeignKey(
+        'User.id', ondelete='CASCADE')
+    )
+
+    '''the file with which the this AnnotationInfo is associated.'''
+    file_id = db.Column(Integer, db.ForeignKey(
+        'File.id', ondelete='CASCADE')
+    )
+
+    '''the label set by the annotator.'''
+    label_id = db.Column(Integer, db.ForeignKey(
+        'Label.id', ondelete='CASCADE')
+    )
+
+    def __str__(self):
+        """Representation."""
+        return 'AnnotationInfo <id={0.id}, \
+                annotationLevel_id={0.annotationLevel_id}, \
+                user_id={0.user_id}, \
+                label_id={0.user_id}, \
+                file_id={0.file_id}>'.format(self)
+
+    def __repr__(self):
+        return 'AnnotationInfo <id={0.id}, \
+                annotationLevel_id={0.annotationLevel_id}, \
+                user_id={0.user_id}, \
+                label_id={0.label_id}, \
+                file_id={0.file_id}>'.format(self)
