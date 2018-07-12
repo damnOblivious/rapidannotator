@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 
 from rapidannotator import db
 from rapidannotator.models import User, Experiment, AnnotatorAssociation, \
-    DisplayTime, AnnotationLevel, Label, TextFile, File
+    DisplayTime, AnnotationLevel, Label, TextFile, File, AnnotationInfo
 from rapidannotator.modules.add_experiment import blueprint
 from rapidannotator.modules.add_experiment.forms import AnnotationLevelForm
 from rapidannotator import bcrypt
@@ -166,6 +166,7 @@ def _addAnnotationLevel():
     )
 
 ''' TODO no 2 labels should have same keybinding '''
+''' TODO no 2 levels should have same number '''
 @blueprint.route('/_addLabels', methods=['POST','GET'])
 def _addLabels():
 
@@ -265,9 +266,9 @@ def _editLabel():
 
 @blueprint.route('/_uploadFiles', methods=['POST','GET'])
 def _uploadFiles():
+    from rapidannotator import app
 
     import sys
-    from rapidannotator import app
     app.logger.info("inFunc")
     app.logger.info(request.form)
     app.logger.info(request.data)
@@ -294,7 +295,7 @@ def _uploadFiles():
                 pass
             else:
                 newFile = File(
-                    url=filePath,
+                    url=filename,
                 )
                 experiment.files.append(newFile)
 
@@ -337,15 +338,8 @@ def _deleteFile():
 @blueprint.route('/_updateFileCaption', methods=['POST','GET'])
 def _updateFileCaption():
 
-    import sys
-    from rapidannotator import app
-    app.logger.info("speededddd up")
-
-
     experimentCategory = request.args.get('experimentCategory', None)
     fileId = request.args.get('fileId', None)
-
-    app.logger.info(request.form)
 
     if experimentCategory == 'text':
         currentFile = TextFile.query.filter_by(id=fileId).first()
@@ -374,15 +368,10 @@ def viewSettings(experimentId):
     notOwners = [x for x in users if x not in owners]
     notAnnotators = [x for x in users if x not in annotators]
 
-    import sys
-    from rapidannotator import app
     if experiment.category == 'text':
         pass
     else:
-        xxx = len(experiment.files)
-    app.logger.info("speededddd up")
-    app.logger.info(xxx)
-
+        totalFiles = experiment.files.count()
 
     return render_template('add_experiment/settings.html',
         users = users,
@@ -391,6 +380,7 @@ def viewSettings(experimentId):
         notOwners = notOwners,
         notAnnotators = notAnnotators,
         annotatorDetails = annotatorDetails,
+        totalFiles = totalFiles,
     )
 
 @blueprint.route('/_deleteAnnotator', methods=['POST','GET'])
@@ -463,6 +453,70 @@ def _deleteExperiment():
     db.session.commit()
 
 
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)
+
+
+@blueprint.route('/viewResults/<int:experimentId>')
+def viewResults(experimentId):
+
+    users = User.query.all()
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+
+    if experiment.category == 'text':
+        pass
+    else:
+        totalFiles = experiment.files.count()
+
+    import sys
+    from rapidannotator import app
+    app.logger.info("vvvvvvvvvvvvvvvvvv vvvvvvvvvvvvvvvv")
+    annotations = {}
+
+    ''' TODO take care of text_files and files '''
+    for f in experiment.files:
+        annotation = {}
+        fileAnnotations = AnnotationInfo.query.filter_by(file_id=f.id).all()
+        for fileAnnotation in fileAnnotations:
+            levelId = fileAnnotation.annotationLevel_id
+            labelId = fileAnnotation.label_id
+            if levelId in annotation:
+                annotation[levelId][labelId] = annotation[levelId].get(labelId, 0) + 1
+            else:
+                annotation[levelId] = {}
+                annotation[levelId][labelId] = 1
+        annotations[f.id] = annotation
+
+    return render_template('add_experiment/results.html',
+        users = users,
+        experiment = experiment,
+        totalFiles = totalFiles,
+        annotations = annotations,
+    )
+
+@blueprint.route('/_discardAnnotations', methods=['POST','GET'])
+def _discardAnnotations():
+
+    experimentId = request.args.get('experimentId', None)
+    annotationLevels = AnnotationLevel.query.filter_by(experiment_id=experimentId).all()
+
+    '''
+        ..  delete all the AnnotationInfo for all the levels
+            of this experiment.
+        ..  reset the current pointer to start pointer of the
+            annotation.
+    '''
+    for level in annotationLevels:
+        AnnotationInfo.query.filter_by(annotationLevel_id=level.id).delete()
+
+    annotatorsInfo = AnnotatorAssociation.query.filter_by(experiment_id=experimentId).all()
+    for annotatorInfo in annotatorsInfo:
+        annotatorInfo.current = annotatorInfo.start
+
+    db.session.commit()
     response = {
         'success' : True,
     }

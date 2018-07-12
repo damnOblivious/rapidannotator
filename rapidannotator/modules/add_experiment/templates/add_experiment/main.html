@@ -260,16 +260,13 @@ $(function() {
     }
 
     function saveCaptionInDatabase(fileId, caption) {
-        var fileCaption = $('#fileTable tbody tr[value=' + file.id + '] .fileCaption p').text();
-        console.log(fileCaption);
+        var fileCaption = $('#fileTable tbody tr[value=' + fileId + '] .fileCaption p').text();
         if( fileCaption == 'No caption provided' || fileCaption == '') return;
-
-        console.log("saving");
 
         var url = "{{ url_for('add_experiment._updateFileCaption')}}";
         var data = {
             'experimentCategory' : '{{ experiment.category }}',
-            'fileId' : currentDeleteFileId,
+            'fileId' :  fileId,
             'caption' : fileCaption,
         };
 
@@ -318,7 +315,6 @@ $(function() {
 
     $("body").on("click", deleteFileButton, function() {
         currentDeleteFileId = $(this).closest("tr").attr('value');
-        // console.log("dleeo", currentDeleteFileId);
     });
 
     closeErrorButton.on('click', function() {
@@ -353,7 +349,7 @@ $(function() {
         var imgAttributeDict = {
             "class" :        "displayImages",
             "src" :          "{{url_for('static', filename = 'img/videoIcon.png')}}",
-            "alt" :          "Red Hen Logo",
+            "alt" :          "Red Hen Lab",
         };
         var imageToAdd = $("<img/>", imgAttributeDict);
 

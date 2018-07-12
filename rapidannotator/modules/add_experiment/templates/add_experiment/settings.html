@@ -15,12 +15,6 @@
     <h5><a>Home</a> > <a>Add Experiments</a></h5>
 </div>
 
-{%- if experiment.category == 'text' -%}
-    {%- set totalFiles = experiment.text_files | count %}
-{%- else -%}
-    {%- set totalFiles = experiment.files | count %}
-{%- endif -%}
-
 <div class="container">
 
     <div style="display: inline-block">
@@ -29,13 +23,14 @@
 
     <div class="pull-right" style="display: inline-block">
         {%- set viewSettings = url_for('add_experiment.viewSettings', experimentId = experiment.id) %}
+        {%- set viewResults = url_for('add_experiment.viewResults', experimentId = experiment.id) %}
 
         {%- if (experiment.category == 'audio' or experiment.category == 'video') -%}
             <a data-toggle="modal" data-target="#displayTimeModalId"
                 class="changeDisplayTime btn btn-primary btn-group btn-group-inline btn-space">{{ ('Display Time') }}
             </a>
         {%- endif -%}
-        <a id="addLableButtonId" href="{{ viewSettings }}" value="{{ viewSettings }}"
+        <a id="addLableButtonId" href="{{ viewResults }}" value="{{ viewSettings }}"
             class="btn btn-primary btn-group btn-group-inline btn-space">{{ ('View Results') }}
         </a>
 
