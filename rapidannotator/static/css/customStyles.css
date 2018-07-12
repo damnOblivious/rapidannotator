@@ -56,7 +56,7 @@
 }
 
 .btn-space-top {
-    margin-right: 0.5em;
+    margin-top: 0.5em;
 }
 
 .inline-title {
@@ -98,4 +98,18 @@
 .completeIcon {
     height : 1.5em;
     width : 1.5em;
+}
+
+.annotationWindow {
+    height : 30em;
+    width : 30em;
+}
+
+.lableName {
+    margin-top: 0px;
+}
+
+.lableKeyBindings {
+    list-style-type: none;
+    padding-left: 0px;
 }
