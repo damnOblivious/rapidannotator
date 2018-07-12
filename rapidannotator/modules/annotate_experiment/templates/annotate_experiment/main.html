@@ -1,0 +1,269 @@
+{% extends "annotate_experiment/base.html" %}
+{% from "macros.html" import render_field %}
+
+{% block title %} annotate_experiment Page {% endblock title %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+  </style>
+{% endblock head %}
+
+{% block annotate_experiment_body %}
+
+<div class="container">
+    <h5><a>Home</a> > <a>Annotate Experiment</a></h5>
+</div>
+
+{%- set totalAnnotationLevels = experiment.annotation_levels | count %}
+
+<div class="container">
+    <div style="display: inline-block">
+        <h3 style="display: inline"><b>{{ experiment.name }}</b></h3>
+    </div>
+    <div class="pull-right" style="display: inline-block">
+        <button type="button" class="btn btn-warning btn-group btn-group-inline btn-space">Undo</button>
+    </div>
+
+    <div class="pull-right" style="display: inline-block">
+        {%- if (experiment.category == 'video') or (experiment.category == 'audio') -%}
+        <button class="toggleLooping btn btn-primary btn-group btn-group-inline btn-space"
+            type="button" value={{current_user.looping}}>
+            {%- if current_user.looping -%}
+                {{ ('Turn off looping') }}
+            {%- else -%}
+                {{ ('Turn on looping') }}
+                {%- endif -%}
+        </button>
+        {%- endif -%}
+    </div>
+    <hr class="horizontal-line">
+</div>
+
+
+<div class="container annotationArea">
+    <div class="row">
+
+        <div class="file col-xs-5">
+            {%- if experiment.category == 'image' -%}
+                <img class="annotationWindow" src="" alt="">
+            {%- elif experiment.category == 'video' -%}
+                <video width="400" controls muted="">
+                    <source src="" type="video/mp4">
+                    Your browser does not support HTML5 video.
+                </video>
+            {%- elif experiment.category == 'audio' -%}
+            {%- elif experiment.category == 'text' -%}
+            {%- endif -%}
+        </div>
+
+
+
+        {% for level in experiment.annotation_levels %}
+            <div class="col-xs-7 annotationLevel hidden-element" data-index="{{loop.index}}" data-levelid="{{level.id}}">
+
+                <h3 class="lableName">
+                    <b>{{level.name}}</b>
+                </h3>
+                <p>
+                    {{level.description}}
+                </p>
+
+                <h4><b>
+                    {{ ('Key Bindings') }}
+                </b></h4>
+
+                <ul class="lableKeyBindings">
+                    {% for label in level.labels %}
+                    <li data-key="{{label.key_binding}}" data-labelid="{{label.id}}">
+                        <p>{{label.key_binding}} : {{label.name}}</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                {% for label in level.labels %}
+                <button type="button" class="labelButton btn btn-primary btn-group btn-group-inline
+                    btn-space btn-space-top" data-labelid="{{label.id}}">
+                    {{ label.name }}
+                </button>
+                {% endfor %}
+
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="fileCaption">
+        <h4></h4>
+    </div>
+</div>
+
+<div class="container hidden-element thanksNote">
+    <h3>No more files to annotate. Thanks</h3>
+</div>
+
+{{ experiment.display_time.before_time }}
+
+<script type="text/javascript">
+    $(window).on('load',function() {
+        var file = $('.file');
+        var loopingButton = $('.toggleLooping');
+
+        loopingButton.on('click', function() {
+            var url = "{{ url_for('annotate_experiment._toggleLooping')}}";
+            var data = {};
+
+            $.getJSON(url, data, function(response) {
+                var looping = loopingButton.val();
+                var newText = "";
+                var video = file.find('video');
+                if(looping == "True") {
+                    newText = "Turn on looping";
+                    loopingButton.val("False");
+                    video.removeAttr('loop');
+                } else {
+                    newText = "Turn off looping";
+                    loopingButton.val("True");
+                    video.attr('loop','loop');
+                }
+
+                loopingButton.text(newText);
+
+            });
+
+        });
+
+        /*level indexing is 1 based*/
+        var currentLevel = 1;
+        /*TODO No file to annotate NOTE in start */
+
+        var labelButton = $('.labelButton');
+        var selectedLabel = -1;
+        var annotations = {};
+        var keyBindingDict = {};
+        var totalAnnotationLevels = {{totalAnnotationLevels}};
+        var currentFileIndex = {{currentFileIndex}};
+        var currentFile = {{currentFile | safe}};
+        updateFile();
+        makeKeyBindingDict();
+
+        function makeKeyBindingDict() {
+            $('.annotationLevel').each( function( index ) {
+                var levelId = $(this).data("levelid");
+                var labelDict = {};
+                $(this).find('.lableKeyBindings li').each(function() {
+                    var key = $(this).data('key');
+                    var labelid = $(this).data('labelid');
+                    labelDict[key] = labelid;
+                })
+                /*index + 1 since we use 1 based indexing*/
+                keyBindingDict[index + 1] = labelDict;
+            })
+
+        }
+
+        /*show only first level*/
+        $(".annotationLevel[data-index=1]").show();
+
+        labelButton.on('click', function() {
+            selectedLabel = $(this).data("labelid");
+            nextLevel(selectedLabel);
+        });
+
+        $(document).keyup(function(event) {
+            var x = event.charCode || event.keyCode;
+            var y = String.fromCharCode(x).toLowerCase();
+            /*for the dict in current index check if the key is there*/
+            $.each( keyBindingDict[currentLevel], function( key, value ) {
+                if( y == key ) {
+                    nextLevel(value);
+                }
+            });
+        });
+
+        function nextLevel(label) {
+            currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
+            levelId = currentLevelBody.data("levelid");
+            annotations[levelId] = label;
+            currentLevelBody.hide();
+            if (currentLevel == totalAnnotationLevels) {
+                fileAnnotationCompleted();
+            }
+            currentLevel = (currentLevel % totalAnnotationLevels) + 1;
+            currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
+            currentLevelBody.show();
+        }
+
+        function fileAnnotationCompleted() {
+            var url = "{{ url_for('annotate_experiment._addAnnotationInfo')}}";
+            var data = {
+                'fileId' :          currentFile.id,
+                'annotations' :     annotations,
+            };
+            data = JSON.stringify(data);
+            $.getJSON(url , data, function(response) {
+                if(response.success) {
+                    annotations = {};
+                    if(currentFileIndex == {{lastFile}}) {
+                        displayEnd();
+                        currentFileIndex = -1;
+                        currentLevel = -1;
+                    } else {
+                        currentFileIndex += 1;
+                        nextFile();
+                    }
+                } else {
+                }
+            });
+        }
+
+        function nextFile() {
+            var url = "{{ url_for('annotate_experiment._getFileDetails')}}";
+            var data = {
+                'currentFileIndex' :    currentFileIndex,
+                'experimentId' :        {{experiment.id}},
+            };
+
+            $.getJSON(url , data, function(response) {
+                currentFile = response;
+                updateFile();
+            });
+        }
+
+        function displayEnd() {
+            $('.annotationArea').hide();
+            $('.thanksNote').show();
+        }
+
+        function updateFile() {
+            /*  since jquery variables can't be passed to jinja
+            hence we have to use this hard coded url to
+            keep dynamic filename
+            */
+            /* TODO make experiment directory specific */
+            /* TODO stop clips using before_time */
+
+            url = "/annotate_experiment/uploads/" + currentFile.url;
+
+            if( "{{ experiment.category }}" === "image") {
+                file.find('img').attr('src', url);
+                file.find('img').attr('alt', caption);
+            } else if( "{{ experiment.category }}" === "video") {
+                video = file.find('video');
+                video.attr('src', url);
+                var looping = loopingButton.val();
+                if (looping == "True") {
+                    video.attr('loop','false');
+                }
+                video[0].play();
+                video[0].currentTime = video[0].currentTime + "{{experiment.display_time.after_time}}";
+            }
+
+
+            var caption = currentFile.caption;
+            $('.fileCaption h4').text(caption);
+        }
+
+    });
+</script>
+
+{% endblock annotate_experiment_body %}
