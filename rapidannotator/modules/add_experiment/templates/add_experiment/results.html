@@ -1,0 +1,130 @@
+{% extends "add_experiment/base.html" %}
+{% from "macros.html" import render_field %}
+
+{% block title %} Add Experiment Page {% endblock title %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+  </style>
+{% endblock head %}
+
+{% block experiment_body %}
+
+<div class="container">
+    <h5><a>Home</a> > <a>Add Experiments</a></h5>
+</div>
+
+<div class="container">
+    <div style="display: inline-block">
+        <h3 style="display: inline"><b>{{ ('Annotation Results') }}</b></h3>
+    </div>
+
+    <div class="pull-right" style="display: inline-block">
+
+        <a id="discardAnnotationsButtonId" href="" data-target="#discardAnnotations"
+            data-toggle="modal" class="btn btn-danger btn-group btn-group-inline
+            btn-space">
+            {{ ('Discard All Annotations') }}
+            <span class="glyphicon glyphicon-trash"></span>
+        </a>
+    </div>
+
+
+    <hr class="horizontal-line">
+</div>
+
+<div class="container">
+    <div>
+        <table class="table table-hover table-striped">
+            <thead>
+                <tr>
+                    <th style="width: 10%"> {{( 'File' )}} </th>
+                    {% set levelCount = experiment.annotation_levels | count %}
+                    {% set width = 90 / levelCount %}
+
+                    {% for level in experiment.annotation_levels %}
+                        <th style="width: {{ width }}%">{{ level.name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for file in experiment.files %}
+                    <tr>
+                        <td>
+                            {{ file.url }}
+                         </td>
+                         {% for level in experiment.annotation_levels %}
+                             <td>
+                                 {% for label in level.labels %}
+                                     {{ label.name }} : &nbsp;
+                                     {%- if annotations[file.id][level.id] -%}
+                                         {%- if annotations[file.id][level.id][label.id] -%}
+                                            {{ annotations[file.id][level.id][label.id] }}
+                                         {%- else -%}
+                                            {{('0')}}
+                                         {%- endif -%}
+                                     {%- else -%}
+                                        {{('0')}}
+                                     {%- endif -%}
+                                    <br>
+                                 {% endfor %}
+                             </td>
+                         {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Delete-Annotations-Modal -->
+<div class="modal fade" id="discardAnnotations" role="dialog" tabindex="-1"
+    aria-labelledby="discardAnnotations" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Are you sure you want to delete all annotations?</h4>
+      </div>
+        <div class="modal-body">
+            <form method="POST" id="discardAnnotationsForm" name="discardAnnotationsForm">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Delete') }} </button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal"> {{ ('Cancel') }} </button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
+  </div>
+</div>
+
+
+<script charset="utf-8" type="text/javascript">
+    $(function() {
+        discardAnnotationsForm = $('#discardAnnotationsForm');
+
+        discardAnnotationsForm.on('submit', function(e) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            var url = "{{ url_for('add_experiment._discardAnnotations')}}";
+            var data = {
+                'experimentId' : {{ experiment.id }},
+            };
+
+            $.getJSON(url , data, function(response) {
+                if(response.success) {
+                    $('#discardAnnotations').modal('hide');
+                } else {
+                }
+            });
+
+        });
+
+    });
+</script>
+
+{% endblock experiment_body %}
