@@ -110,7 +110,7 @@
 
 
 <!-- Edit-Label-Modal -->
-<div class="modal fade" id="editLabelModal" role="dialog" tabindex="-1"
+<div class="modal fade labelModalClass" id="editLabelModal" role="dialog" tabindex="-1"
     aria-labelledby="editLabelModal" aria-hidden="true">
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
@@ -211,9 +211,8 @@
   </div>
 </div>
 
-
 <!-- Add-Label-Modal -->
-<div class="modal fade" id="addLabelModal" role="dialog" tabindex="-1"
+<div class="modal fade labelModalClass" id="addLabelModal" role="dialog" tabindex="-1"
     aria-labelledby="addLabelModal" aria-hidden="true">
   <div class="modal-dialog modal-sm">
     <!-- Modal content-->
@@ -237,6 +236,7 @@
 
                 <div class="form-actions">
                     <button type="submit" name="submit" value="" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Submit') }}</button>
+                    <!-- <button type="button" class="nextLabelButton btn btn-primary"><i class="fa fa-check"></i> {{ ('Add More') }}</button> -->
                     <button type="button" id="" class="btn btn-default pull-right" data-dismiss="modal">{{ ('Cancel') }}</button>
                 </div>
             </form>
@@ -296,6 +296,17 @@
 
         var selectedAnnotationId = -1;
         var selectedLabelId = -1;
+
+        $('.nextLabelButton').on('click', function() {
+            $('#addLabelModal').modal('show');
+        })
+
+        /* TODO add this to all files */
+        $('.modal').on('shown.bs.modal', function () {
+            ll = $(this).find("input:first");
+            console.log(ll);
+            $(this).find("input:first").focus();
+        })
 
         $("body").on("click", deleteLabelButton, function() {
             selectedLabelId = $(this).parent().attr('value');
