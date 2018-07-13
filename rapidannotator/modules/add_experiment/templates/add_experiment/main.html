@@ -119,7 +119,7 @@
 
             {% for file in experiment.files | reverse %}
                 {%- set experiment_url = url_for('view_experiment.index', experimentId = experiment.id) %}
-                <tr class='clickable-row' value={{file.id}} data-href="">
+                <tr class='' value={{file.id}} data-href="">
                 <td>
                     <img class="displayImages" src="{{url_for('static', filename = 'img/videoIcon.png')}}" alt="Red Hen Logo">
                 </td>
