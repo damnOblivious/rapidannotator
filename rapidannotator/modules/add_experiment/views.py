@@ -165,7 +165,7 @@ def _addAnnotationLevel():
         errors = errors,
     )
 
-''' TODO no 2 labels should have same keybinding '''
+''' TODO DONE no 2 labels should have same keybinding '''
 ''' TODO no 2 levels should have same number '''
 @blueprint.route('/_addLabels', methods=['POST','GET'])
 def _addLabels():
@@ -174,12 +174,21 @@ def _addLabels():
     labelName = request.args.get('labelName', None)
     labelKey = request.args.get('labelKey', None)
 
-    import sys
-    from rapidannotator import app
-    app.logger.info("speededddd up")
-    app.logger.info(annotationId)
-
     annotationLevel = AnnotationLevel.query.filter_by(id=annotationId).first()
+    annotationLabels = Label.query.filter_by(annotation_id=annotationId).all()
+
+    for label in annotationLabels:
+        if labelName == label.name:
+            response = {
+                'error' : 'Name already taken',
+            }
+            return jsonify(response)
+        if labelKey and (labelKey == label.key_binding):
+            response = {
+                'error' : 'Key already taken',
+            }
+            return jsonify(response)
+
     label = Label(
         name = labelName,
         key_binding = labelKey,
@@ -187,7 +196,6 @@ def _addLabels():
     annotationLevel.labels.append(label)
 
     db.session.commit()
-
     labelId = label.id
 
     response = {

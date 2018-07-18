@@ -279,12 +279,10 @@
   </div>
 </div>
 
-
 <script charset="utf-8" type="text/javascript">
     $(function() {
 
         var errors = "{{errors}}";
-
         if( "{{ errors }}" == "annotationLevelErrors") {
             $('#addAnnotationLevelModal').modal('show');
         }
@@ -346,16 +344,55 @@
                 "labelKey" : labelKey,
                 "annotationId" : selectedAnnotationId,
             };
-            addAsync(labelTuple);
 
-            if( !addAnotherLevel ) {
-                $('#addLabelModal').modal('hide');
-            }
-            $('input[name="labelName"]').val("");
-            $('input[name="labelKey"]').val("");
-            $(this).find("input:first").focus();
-            addAnotherLevel = false;
+            var url = "{{ url_for('add_experiment._addLabels')}}";
+
+            $.getJSON(url , labelTuple, function(response) {
+                if(response.success) {
+                    displayAsync(labelTuple, response.labelId);
+                    if( !addAnotherLevel ) {
+                        $('#addLabelModal').modal('hide');
+                    }
+                    $('input[name="labelName"]').val("");
+                    $('input[name="labelKey"]').val("");
+                    addLabelForm.find("input:first").focus();
+
+                    addAnotherLevel = false;
+                    addLabelForm.find('.errorDiv').remove();
+
+                } else {
+                    addLabelForm.find('.errorDiv').remove();
+                    addErrorToForm(response.error);
+                }
+            });
+
         });
+
+        function addErrorToForm(error) {
+            var divAttributeDict = {
+                "class":        "errorDiv alert alert-danger alert-dismissible text-left",
+                "role":         "alert",
+            };
+
+            var errorDiv = $("<div/>", divAttributeDict);
+
+            var buttonAttributeDict = {
+                "type":         "button",
+                "text":         "\xD7",
+                "class":        "close",
+                "data-dismiss": "alert",
+                "aria-label":   "Close",
+            };
+
+            var closeButton = $("<button/>", buttonAttributeDict);
+            closeButton.appendTo(errorDiv);
+
+            var msg = $("<p/>", {
+                "text": error,
+            });
+            msg.appendTo(errorDiv);
+            errorDiv.prependTo(addLabelForm);
+        }
 
         deleteLabelForm.on('submit', function(e) {
             e.stopImmediatePropagation();
