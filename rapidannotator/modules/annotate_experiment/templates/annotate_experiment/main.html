@@ -40,7 +40,6 @@
     <hr class="horizontal-line">
 </div>
 
-
 <div class="container annotationArea">
     <div class="row">
 
@@ -57,9 +56,7 @@
             {%- endif -%}
         </div>
 
-
-
-        {% for level in experiment.annotation_levels %}
+        {% for level in experiment.annotation_levels | sort(attribute='level_number')%}
             <div class="col-xs-7 annotationLevel hidden-element" data-index="{{loop.index}}" data-levelid="{{level.id}}">
 
                 <h3 class="lableName">
