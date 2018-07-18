@@ -13,6 +13,8 @@ from rapidannotator import bcrypt
 from flask_login import current_user, login_required
 from flask_login import login_user, logout_user, current_user
 
+from sqlalchemy import and_
+
 
 import os
 
@@ -143,20 +145,31 @@ def _addAnnotationLevel():
     experiment = Experiment.query.filter_by(id=experimentId).first()
     annotation_levels = experiment.annotation_levels
 
+
     if annotationLevelForm.validate_on_submit():
-        annotationLevel = AnnotationLevel(
-            name = annotationLevelForm.name.data,
-            description = annotationLevelForm.description.data,
-        )
-        if annotationLevelForm.levelNumber.data:
-            annotationLevel.level_number = annotationLevelForm.levelNumber.data
-        experiment.annotation_levels.append(annotationLevel)
-        db.session.commit()
-        # flash(_('Successfully added the annotation level.'))
-        return redirect(url_for('add_experiment.editLables', experimentId = experimentId))
+        levelNumberValidated = True
+
+        levelNumber = annotationLevelForm.levelNumber.data
+        if levelNumber:
+            existing = AnnotationLevel.query.filter(and_\
+                        (AnnotationLevel.experiment_id==experimentId, \
+                        AnnotationLevel.level_number==levelNumber)).first()
+            if existing is not None:
+                annotationLevelForm.levelNumber.errors.append('Level Number already used')
+                levelNumberValidated = False
+
+        if levelNumberValidated:
+            annotationLevel = AnnotationLevel(
+                name = annotationLevelForm.name.data,
+                description = annotationLevelForm.description.data,
+            )
+            if levelNumber:
+                annotationLevel.level_number = annotationLevelForm.levelNumber.data
+            experiment.annotation_levels.append(annotationLevel)
+            db.session.commit()
+            return redirect(url_for('add_experiment.editLables', experimentId = experimentId))
 
     errors = "annotationLevelErrors"
-
 
     return render_template('add_experiment/labels.html',
         experiment = experiment,
@@ -166,7 +179,8 @@ def _addAnnotationLevel():
     )
 
 ''' TODO DONE no 2 labels should have same keybinding '''
-''' TODO no 2 levels should have same number '''
+''' TODO DONE no 2 levels should have same number '''
+''' TODO display level as per number '''
 @blueprint.route('/_addLabels', methods=['POST','GET'])
 def _addLabels():
 
