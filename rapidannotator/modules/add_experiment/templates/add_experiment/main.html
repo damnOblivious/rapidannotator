@@ -259,6 +259,19 @@ $(function() {
     	editing = false;
     }
 
+    $(document).keydown(function(event) {
+        if(editing) {
+            var x = event.charCode || event.keyCode;
+            console.log(x);
+            if( x == 13 || x == 27 ) { // code for enter key(13) and esc key(27)
+                event.stopImmediatePropagation();
+                event.preventDefault();
+                saveEdit();
+            }
+        }
+    });
+
+
     function saveCaptionInDatabase(fileId, caption) {
         var fileCaption = $('#fileTable tbody tr[value=' + fileId + '] .fileCaption p').text();
         if( fileCaption == 'No caption provided' || fileCaption == '') return;
