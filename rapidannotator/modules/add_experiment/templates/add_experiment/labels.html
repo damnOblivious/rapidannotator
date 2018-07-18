@@ -226,7 +226,7 @@
 
                 <b>Label Name</b>
                 <input type="text" name="labelName" id="labelName" maxlength="32" minlength="1"
-                    class="form-control validate" placeholder="Label Name">
+                    class="form-control validate" placeholder="Label Name" required>
                 <span class="help-block"><small>Label Name (should be precise and unambiguous). Max length : 32</small></span>
 
                 <b>Key Binding</b>
@@ -236,7 +236,7 @@
 
                 <div class="form-actions">
                     <button type="submit" name="submit" value="" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Submit') }}</button>
-                    <!-- <button type="button" class="nextLabelButton btn btn-primary"><i class="fa fa-check"></i> {{ ('Add More') }}</button> -->
+                    <button type="submit" class="nextLabelButton btn btn-primary"><i class="fa fa-check"></i> {{ ('Add Another') }}</button>
                     <button type="button" id="" class="btn btn-default pull-right" data-dismiss="modal">{{ ('Cancel') }}</button>
                 </div>
             </form>
@@ -283,6 +283,12 @@
 <script charset="utf-8" type="text/javascript">
     $(function() {
 
+        var errors = "{{errors}}";
+
+        if( "{{ errors }}" == "annotationLevelErrors") {
+            $('#addAnnotationLevelModal').modal('show');
+        }
+
         var editAnnotationLevelForm = $('#editAnnotationLevelForm');
         var deleteAnnotationLevelForm = $('#deleteAnnotationLevelForm');
         var editAnnotationLevelButton = $('.annotationDescriptionGrp .glyphicon-pencil');
@@ -296,15 +302,12 @@
 
         var selectedAnnotationId = -1;
         var selectedLabelId = -1;
+        var addAnotherLevel = false;
 
-        $('.nextLabelButton').on('click', function() {
-            $('#addLabelModal').modal('show');
-        })
 
         /* TODO add this to all files */
         $('.modal').on('shown.bs.modal', function () {
             ll = $(this).find("input:first");
-            console.log(ll);
             $(this).find("input:first").focus();
         })
 
@@ -329,8 +332,11 @@
             selectedAnnotationId = $(this).closest('.annotation_level').attr('value');
         });
 
-        addLabelForm.on('submit', function(e) {
+        $('.nextLabelButton').on('click', function() {
+            addAnotherLevel = true;
+        })
 
+        addLabelForm.on('submit', function(e) {
             e.stopImmediatePropagation();
             e.preventDefault();
             var labelName = addLabelForm.find('input[name="labelName"]').val();
@@ -340,13 +346,15 @@
                 "labelKey" : labelKey,
                 "annotationId" : selectedAnnotationId,
             };
-            console.log(labelTuple);
             addAsync(labelTuple);
 
-            $('#addLabelModal').modal('hide');
+            if( !addAnotherLevel ) {
+                $('#addLabelModal').modal('hide');
+            }
             $('input[name="labelName"]').val("");
             $('input[name="labelKey"]').val("");
-
+            $(this).find("input:first").focus();
+            addAnotherLevel = false;
         });
 
         deleteLabelForm.on('submit', function(e) {
@@ -360,10 +368,7 @@
             $.getJSON(url , data, function(response) {
                 if(response.success) {
                     deleteAsync(selectedLabelId, selectedAnnotationId);
-                }
-                else {
-                    /*do something here*/
-                }
+                } else { }
             });
 
         });
@@ -386,10 +391,7 @@
                 if(response.success) {
                     updateLabel(selectedLabelId, name, key);
                     $('#editLabelModal').modal('hide');
-                }
-                else {
-                    /*do something here*/
-                }
+                } else { }
             });
 
         });
@@ -429,9 +431,7 @@
                     updateAnnotationLevel(selectedAnnotationId, name, description, levelNumber);
                     $('#editAnnotationLevelModal').modal('hide');
                 }
-                else {
-                    /*do something here*/
-                }
+                else { }
             });
 
         });
@@ -447,14 +447,11 @@
             };
             $.getJSON(url , data, function(response) {
                 if(response.success) {
-                    console.log(response);
                     $(".annotation_level[value=" + selectedAnnotationId + "]").remove();
                     $("hr[value=" + selectedAnnotationId + "]").remove();
                     $('#deleteAnnotationLevel').modal('hide');
                 }
-                else {
-                    /*do something here*/
-                }
+                else { }
             });
 
         });
@@ -567,10 +564,7 @@
             $.getJSON(url , data, function(response) {
                 if(response.success) {
                     displayAsync(labelTuple, response.labelId);
-                }
-                else {
-                    /*do something here*/
-                }
+                } else { }
             });
         }
 
