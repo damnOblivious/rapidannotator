@@ -119,7 +119,7 @@
 
             {% for file in experiment.files | reverse %}
                 {%- set experiment_url = url_for('view_experiment.index', experimentId = experiment.id) %}
-                <tr class='' value={{file.id}} data-href="">
+                <tr class="" value={{file.id}} data-href="">
                 <td>
                     <img class="displayImages" src="{{url_for('static', filename = 'img/videoIcon.png')}}" alt="Red Hen Logo">
                 </td>
@@ -193,8 +193,10 @@
 
 <script charset="utf-8" type="text/javascript">
 $(function() {
+    /* TODO prevent same file from getting uploaded */
     /* TODO UPDATE IMAGE */
     /* TODO change multipart_params TO params {if multipart_params is deprecated}*/
+
     /* TODO DONE ADD TICK AFTER UPLOADED FOR 3-5 SECS */
     /* TODO DONE UPDATE ID */
     /* TODO DONE SEND CAPTION */
@@ -339,7 +341,7 @@ $(function() {
 
         var fileTableBody = $('#fileTable').find("tbody");
         var rowAttributeDict = {
-            "class" :           "clickable-row",
+            "class" :           "choosenFile",
             "value" :           file.id,
         }
 
@@ -467,7 +469,8 @@ $(function() {
             },
 
             FileUploaded: function(up, file, response) {
-                var uploadedRow = $("tr[value=" + file.id + "]");
+                uploadedRow = $("tr[value=" + file.id + "]");
+                uploadedRow.removeClass('choosenFile');
                 var imageColumn = uploadedRow.find('td:first-child');
 
                 var imgAttributeDict = {
@@ -478,7 +481,6 @@ $(function() {
                 var uploadCompleteIcon = $("<img/>", imgAttributeDict);
                 uploadCompleteIcon.appendTo(imageColumn);
                 uploadCompleteIcon.fadeOut(15000);
-
                 var serverResponse = JSON.parse(response.response);
                 $("tr[value=" + file.id + "]").attr("value", serverResponse.fileId);
             },
