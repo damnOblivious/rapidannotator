@@ -180,7 +180,7 @@ def _addAnnotationLevel():
 
 ''' TODO DONE no 2 labels should have same keybinding '''
 ''' TODO DONE no 2 levels should have same number '''
-''' TODO display level as per number '''
+''' TODO DONE display level as per number '''
 @blueprint.route('/_addLabels', methods=['POST','GET'])
 def _addLabels():
 
@@ -290,11 +290,6 @@ def _editLabel():
 def _uploadFiles():
     from rapidannotator import app
 
-    import sys
-    app.logger.info("inFunc")
-    app.logger.info(request.form)
-    app.logger.info(request.data)
-
     if request.method == 'POST':
 
         if 'file' not in request.files:
@@ -304,31 +299,39 @@ def _uploadFiles():
         if file.filename == '':
             flash('No selected file')
             return response
-        ''' also check for the allowed filename '''
+        ''' TODO also check for the allowed filename '''
         if file:
             filename = secure_filename(file.filename)
-            filePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filePath)
             experimentId = request.form.get('experimentId', None)
             fileCaption = request.form.get('fileCaption', None)
+
+            '''
+                check if the directory for this experiment
+                ..  already exists
+                ..  if not then create
+            '''
+            experimentDir = os.path.join(app.config['UPLOAD_FOLDER'],
+                                    str(experimentId))
+            if not os.path.exists(experimentDir):
+                os.makedirs(experimentDir)
+
+            filePath = os.path.join(experimentDir, filename)
+            file.save(filePath)
 
             experiment = Experiment.query.filter_by(id=experimentId).first()
             if experiment.category == 'text':
                 pass
             else:
-                newFile = File(
-                    url=filename,
-                )
+                newFile = File(url=filename,)
                 experiment.files.append(newFile)
 
             newFile.caption = fileCaption
             db.session.commit()
 
-
             response = {
-            'success' : True,
-            'fileId' : newFile.id,
-            'fileUrl' : newFile.url,
+                'success' : True,
+                'fileId' : newFile.id,
+                'fileUrl' : newFile.url,
             }
 
             return jsonify(response)
@@ -337,24 +340,41 @@ def _uploadFiles():
 
     return jsonify(response)
 
-''' delete from folder too '''
 @blueprint.route('/_deleteFile', methods=['POST','GET'])
 def _deleteFile():
 
+    ''' TODO check when to import app '''
+    from rapidannotator import app
+
     experimentCategory = request.args.get('experimentCategory', None)
+    experimentId = request.args.get('experimentId', None)
     fileId = request.args.get('fileId', None)
+
+    '''
+        check if the directory for this experiment
+        ..  already exists
+        ..  if not then create
+    '''
+    experimentDir = os.path.join(app.config['UPLOAD_FOLDER'],
+                            str(experimentId))
+    if not os.path.exists(experimentDir):
+        response = {
+            'error' : "specified experiment doesn't have any file",
+        }
+        return jsonify(response)
 
     if experimentCategory == 'text':
         TextFile.query.filter_by(id=fileId).delete()
     else:
-        File.query.filter_by(id=fileId).delete()
+        currFile = File.query.filter_by(id=fileId).first()
+        filePath = os.path.join(experimentDir, currFile.url)
+        os.remove(filePath)
+        db.session.delete(currFile)
 
     db.session.commit()
     response = {
         'success' : True,
     }
-
-
     return jsonify(response)
 
 @blueprint.route('/_updateFileCaption', methods=['POST','GET'])

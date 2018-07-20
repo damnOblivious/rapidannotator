@@ -314,6 +314,7 @@ $(function() {
         var url = "{{ url_for('add_experiment._deleteFile')}}";
         var data = {
             'experimentCategory' : '{{ experiment.category }}',
+            'experimentId' : '{{ experiment.id }}',
             'fileId' : currentDeleteFileId,
         };
 
@@ -412,7 +413,7 @@ $(function() {
                     case 'text':
                         fileTypes = {
                             mime_types: [
-                                {title : "Text files", extensions : "plain,html,css,csv,rtf"},
+                                {title : "Text files", extensions : "txt,plain,html"},
                             ]
                         }
         				break;
@@ -497,9 +498,9 @@ $(function() {
             },
 
             Error: function(up, err) {
-                $(".errorLog").find(".container").find("strong").append("Error #" + err.code + ": " + err.message+ "<br/>");
+                asdf = err;
+                $(".errorLog").find(".container").find("strong").append("Error ### " + err.file.name + " : " + err.code + " : " + err.message + "<br/>");
                 $(".hidden-element").show();
-                console.log("fooo");
             }
         }
     });

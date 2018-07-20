@@ -34,14 +34,14 @@ def index(experimentId):
     if lastFile == -1:
         lastFile = experiment.files.count()
 
-    ''' to make compatible with 0-based indexing '''
+    ''' It is to make compatible with 0-based indexing '''
     lastFile -= 1
 
     if currentFileIndex <= lastFile:
         currentFile = _getFile(experimentId, currentFileIndex)
     else:
         currentFile = []
-    ''' TODO do something else if no file is added '''
+    ''' TODO Display something else if no file is added '''
     ''' TODO annotation as per annotation number '''
     ''' TODO move current back to original value if any file was deleted '''
 
@@ -70,7 +70,7 @@ def _getFile(experimentId, fileIndex):
     return currentFile
 
 '''
-    NOT USED YET
+    TODO? NOT USED YET
     .. updates the value of current to the value given in params
 '''
 def updateCurrentFileIndex(experimentId, currentFileIndex):

@@ -236,10 +236,12 @@
             hence we have to use this hard coded url to
             keep dynamic filename
             */
-            /* TODO make experiment directory specific */
+            
+            /* TODO DONE make experiment directory specific */
             /* TODO stop clips using before_time */
 
-            url = "/annotate_experiment/uploads/" + currentFile.url;
+            url = "/annotate_experiment/uploads/" + {{experiment.id}} + "/" + currentFile.url;
+            console.log(url);
 
             if( "{{ experiment.category }}" === "image") {
                 file.find('img').attr('src', url);
