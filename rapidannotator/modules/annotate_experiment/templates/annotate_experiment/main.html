@@ -53,6 +53,11 @@
                 </video>
             {%- elif experiment.category == 'audio' -%}
             {%- elif experiment.category == 'text' -%}
+                <pre>
+ hasdfasadsf onload="";
+ asdfasdf asdfl ajsd;lfasdf'sadfasdf
+ dasfjlasdfjasdlfasd' sadfasdf
+                </pre>
             {%- endif -%}
         </div>
 
@@ -255,6 +260,8 @@
                 }
                 video[0].play();
                 video[0].currentTime = video[0].currentTime + "{{experiment.display_time.after_time}}";
+            } else if( "{{ experiment.category }}" === "text") {
+                file.find('pre').text(currentFile.content);
             }
 
 

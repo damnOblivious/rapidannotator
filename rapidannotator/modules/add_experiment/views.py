@@ -278,13 +278,16 @@ def _editLabel():
 
     return jsonify(response)
 
+
+
+
+
 '''
     TODO
     .. extract all text from the text file and store in database
     .. check for the allowed filename
     .. delete from folder too
 '''
-
 
 @blueprint.route('/_uploadFiles', methods=['POST','GET'])
 def _uploadFiles():
@@ -295,43 +298,44 @@ def _uploadFiles():
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
+        flaskFile = request.files['file']
+        if flaskFile.filename == '':
             flash('No selected file')
             return response
         ''' TODO also check for the allowed filename '''
-        if file:
-            filename = secure_filename(file.filename)
+        if flaskFile:
             experimentId = request.form.get('experimentId', None)
-            fileCaption = request.form.get('fileCaption', None)
-
-            '''
-                check if the directory for this experiment
-                ..  already exists
-                ..  if not then create
-            '''
-            experimentDir = os.path.join(app.config['UPLOAD_FOLDER'],
-                                    str(experimentId))
-            if not os.path.exists(experimentDir):
-                os.makedirs(experimentDir)
-
-            filePath = os.path.join(experimentDir, filename)
-            file.save(filePath)
-
             experiment = Experiment.query.filter_by(id=experimentId).first()
+            filename = secure_filename(flaskFile.filename)
             newFile = File(name=filename)
+            experiment.files.append(newFile)
+            fileCaption = request.form.get('fileCaption', None)
+            newFile.caption = fileCaption
+
             if experiment.category == 'text':
-                pass
+                flaskFile.seek(0)
+                fileContents = flaskFile.read()
+                newFile.content = fileContents
             else:
+                '''
+                    check if the directory for this experiment
+                    ..  already exists
+                    ..  if not then create
+                '''
+                experimentDir = os.path.join(app.config['UPLOAD_FOLDER'],
+                                        str(experimentId))
+                if not os.path.exists(experimentDir):
+                    os.makedirs(experimentDir)
+
+                filePath = os.path.join(experimentDir, filename)
+                flaskFile.save(filePath)
                 newFile.content = filename
 
-            newFile.caption = fileCaption
-            experiment.files.append(newFile)
 
             db.session.commit()
 
-            ''' TODO? remove content from response '''
-            ''' TODO name file name editable '''
+            ''' TODO? remove "content" from response '''
+            ''' TODO make file name editable '''
 
             response = {
                 'success' : True,
