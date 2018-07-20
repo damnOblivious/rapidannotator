@@ -117,3 +117,7 @@
 .clickable-row {
     cursor: pointer;
 }
+
+.choosenFile {
+    background-color: #EBED6E !important;
+}

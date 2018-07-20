@@ -186,13 +186,13 @@ class Experiment(db.Model):
                             cascade='all, delete-orphan', passive_deletes=True
     )
 
-    """ One to Many relation
-    ..  For Text Experiments:
-    ..  the text content for each file.
-    """
-    text_files = db.relationship("TextFile", lazy='dynamic',
-            cascade='all, delete-orphan', passive_deletes=True
-    )
+    # """ One to Many relation
+    # ..  For Text Experiments:
+    # ..  the text content for each file.
+    # """
+    # text_files = db.relationship("TextFile", lazy='dynamic',
+    #         cascade='all, delete-orphan', passive_deletes=True
+    # )
 
     """ One to Many relation
     ..  For Images / Audio / Video Experiments:
@@ -331,49 +331,50 @@ class Label(db.Model):
                 name={0.name}, \
                 key_binding={0.key_binding}>'.format(self)
 
+# """
+#     TextFile model to store the text contents of the Text Experiments
+# """
+# class TextFile(db.Model):
+#     __tablename__ = 'TextFile'
+#
+#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#
+#     '''the experiment with which the this text file is associated.'''
+#     experiment_id = db.Column(Integer, db.ForeignKey(
+#         'Experiment.id', ondelete='CASCADE')
+#     )
+#
+#     ''' caption
+#     ..  a small description of the text.
+#     ..  size is limited to 320 characters
+#     '''
+#     caption = db.Column(db.String(320), nullable=False, server_default='')
+#
+#     ''' content
+#     ..  the actual text to be annotated.
+#     ..  size is limited to 65000 characters.
+#     ..  size limit of TEXT field of MySQL is 65535
+#     ..  the maximum table row size allowed is 65535 including storing overheads.
+#     '''
+#     content = db.Column(db.String(65000), nullable=False, server_default='')
+#
+#     def __str__(self):
+#         """Representation."""
+#         return 'TextFile <id={0.id}, \
+#                 Experiment={0.experiment_id}, \
+#                 caption={0.caption}, \
+#                 content={0.content}>'.format(self)
+#
+#     def __repr__(self):
+#         return 'TextFile <id={0.id}, \
+#                 Experiment={0.experiment_id}, \
+#                 caption={0.caption}, \
+#                 content={0.content}>'.format(self)
+
 """
-    TextFile model to store the text contents of the Text Experiments
-"""
-class TextFile(db.Model):
-    __tablename__ = 'TextFile'
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-
-    '''the experiment with which the this text file is associated.'''
-    experiment_id = db.Column(Integer, db.ForeignKey(
-        'Experiment.id', ondelete='CASCADE')
-    )
-
-    ''' caption
-    ..  a small description of the text.
-    ..  size is limited to 320 characters
-    '''
-    caption = db.Column(db.String(320), nullable=False, server_default='')
-
-    ''' content
-    ..  the actual text to be annotated.
-    ..  size is limited to 65000 characters.
-    ..  size limit of TEXT field of MySQL is 65535
-    ..  the maximum table row size allowed is 65535 including storing overheads.
-    '''
-    content = db.Column(db.String(65000), nullable=False, server_default='')
-
-    def __str__(self):
-        """Representation."""
-        return 'TextFile <id={0.id}, \
-                Experiment={0.experiment_id}, \
-                caption={0.caption}, \
-                content={0.content}>'.format(self)
-
-    def __repr__(self):
-        return 'TextFile <id={0.id}, \
-                Experiment={0.experiment_id}, \
-                caption={0.caption}, \
-                content={0.content}>'.format(self)
-
-"""
-    File model to store the path to the contents of the Experiments
-    of the type Audio / Video / Image.
+    File model to store the caption and
+    path to the contents in case of Audio / Video / Image experiments and
+    actual contents in case of Text experiments.
 """
 class File(db.Model):
     __tablename__ = 'File'
@@ -385,16 +386,27 @@ class File(db.Model):
         'Experiment.id', ondelete='CASCADE')
     )
 
+    ''' name
+    ..  name(editatble) of the uploaded file.
+    ..  size is limited to 1024 characters
+    '''
+    name = db.Column(db.String(1024), nullable=False, server_default='')
+
     ''' caption
     ..  a small description of the text.
     ..  size is limited to 320 characters
     '''
     caption = db.Column(db.String(320), nullable=False, server_default='')
 
-    ''' url
-    ..  the actual url / path of the content / file to be displayed
+    ''' content
+    ..  actual text to be annotated for Text experiments.
+    ..  url / path of the content / file to be displayed
+    ..  for Audio / Video / Image experiments
+    ..  size is limited to 2^15 characters.
+    ..  size limit of TEXT field of MySQL is 65535
+    ..  the maximum table row size allowed is 65535 including storing overheads.
     '''
-    url = db.Column(db.String(1024), nullable=False, server_default='')
+    content = db.Column(db.String(32768), nullable=False, server_default='')
 
     """ One to Many relation
     ..  For File:
@@ -409,7 +421,7 @@ class File(db.Model):
         return 'File <id={0.id}, \
                 Experiment={0.experiment_id}, \
                 caption={0.caption}, \
-                url={0.url}>'.format(self)
+                content={0.content}>'.format(self)
 
     def __repr__(self):
         return 'File <id={0.id}, \

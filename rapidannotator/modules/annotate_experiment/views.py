@@ -6,7 +6,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from rapidannotator import db
 from rapidannotator import bcrypt
 from rapidannotator.models import User, Experiment, AnnotatorAssociation, File, \
-    TextFile, AnnotationInfo
+    AnnotationInfo
 from rapidannotator.modules.annotate_experiment import blueprint
 
 import json
@@ -61,12 +61,12 @@ def _getFile(experimentId, fileIndex):
     experiment = Experiment.query.filter_by(id=experimentId).first()
     currentFile = experiment.files.order_by(File.id)[fileIndex]
 
+    ''' TODO add filename to response '''
     currentFile = {
         'id' : currentFile.id,
-        'url' : currentFile.url,
+        'content' : currentFile.content,
         'caption' : currentFile.caption,
     }
-    # currentFile = jsonify(currentFile)
     return currentFile
 
 '''
@@ -138,8 +138,6 @@ def _addAnnotationInfo():
     app.logger.info("keys")
     for annotationLevelId in annotations:
         labelId = annotations[annotationLevelId]
-        app.logger.info(annotationLevelId)
-        app.logger.info(labelId)
         annotationInfo = AnnotationInfo(
             file_id = fileId,
             annotationLevel_id = annotationLevelId,

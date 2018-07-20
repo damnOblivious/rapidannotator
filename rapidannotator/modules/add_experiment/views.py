@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 
 from rapidannotator import db
 from rapidannotator.models import User, Experiment, AnnotatorAssociation, \
-    DisplayTime, AnnotationLevel, Label, TextFile, File, AnnotationInfo
+    DisplayTime, AnnotationLevel, Label, File, AnnotationInfo
 from rapidannotator.modules.add_experiment import blueprint
 from rapidannotator.modules.add_experiment.forms import AnnotationLevelForm
 from rapidannotator import bcrypt
@@ -319,19 +319,24 @@ def _uploadFiles():
             file.save(filePath)
 
             experiment = Experiment.query.filter_by(id=experimentId).first()
+            newFile = File(name=filename)
             if experiment.category == 'text':
                 pass
             else:
-                newFile = File(url=filename,)
-                experiment.files.append(newFile)
+                newFile.content = filename
 
             newFile.caption = fileCaption
+            experiment.files.append(newFile)
+
             db.session.commit()
+
+            ''' TODO? remove content from response '''
+            ''' TODO name file name editable '''
 
             response = {
                 'success' : True,
                 'fileId' : newFile.id,
-                'fileUrl' : newFile.url,
+                'content' : newFile.content,
             }
 
             return jsonify(response)
@@ -350,27 +355,26 @@ def _deleteFile():
     experimentId = request.args.get('experimentId', None)
     fileId = request.args.get('fileId', None)
 
-    '''
-        check if the directory for this experiment
-        ..  already exists
-        ..  if not then create
-    '''
-    experimentDir = os.path.join(app.config['UPLOAD_FOLDER'],
-                            str(experimentId))
-    if not os.path.exists(experimentDir):
-        response = {
-            'error' : "specified experiment doesn't have any file",
-        }
-        return jsonify(response)
+    currFile = File.query.filter_by(id=fileId).first()
 
-    if experimentCategory == 'text':
-        TextFile.query.filter_by(id=fileId).delete()
-    else:
-        currFile = File.query.filter_by(id=fileId).first()
+    if experimentCategory != 'text':
+        '''
+            check if the directory for this experiment
+            ..  already exists
+            ..  if not then create
+        '''
+        experimentDir = os.path.join(app.config['UPLOAD_FOLDER'],
+                                str(experimentId))
+        if not os.path.exists(experimentDir):
+            response = {
+                'error' : "specified experiment doesn't have any file",
+            }
+            return jsonify(response)
+
         filePath = os.path.join(experimentDir, currFile.url)
         os.remove(filePath)
-        db.session.delete(currFile)
 
+    db.session.delete(currFile)
     db.session.commit()
     response = {
         'success' : True,
@@ -380,14 +384,11 @@ def _deleteFile():
 @blueprint.route('/_updateFileCaption', methods=['POST','GET'])
 def _updateFileCaption():
 
+    ''' TODO remove experimentCategory '''
     experimentCategory = request.args.get('experimentCategory', None)
     fileId = request.args.get('fileId', None)
 
-    if experimentCategory == 'text':
-        currentFile = TextFile.query.filter_by(id=fileId).first()
-    else:
-        currentFile = File.query.filter_by(id=fileId).first()
-
+    currentFile = File.query.filter_by(id=fileId).first()
     currentFile.caption = request.args.get('caption', None)
 
     db.session.commit()
@@ -410,10 +411,11 @@ def viewSettings(experimentId):
     notOwners = [x for x in users if x not in owners]
     notAnnotators = [x for x in users if x not in annotators]
 
-    if experiment.category == 'text':
-        pass
-    else:
-        totalFiles = experiment.files.count()
+    totalFiles = experiment.files.count()
+
+    # if experiment.category == 'text':
+    #     pass
+    # else:
 
     return render_template('add_experiment/settings.html',
         users = users,
@@ -507,11 +509,11 @@ def viewResults(experimentId):
 
     users = User.query.all()
     experiment = Experiment.query.filter_by(id=experimentId).first()
+    totalFiles = experiment.files.count()
 
-    if experiment.category == 'text':
-        pass
-    else:
-        totalFiles = experiment.files.count()
+    # if experiment.category == 'text':
+    #     pass
+    # else:
 
     import sys
     from rapidannotator import app

@@ -123,7 +123,7 @@
                 <td>
                     <img class="displayImages" src="{{url_for('static', filename = 'img/videoIcon.png')}}" alt="Red Hen Logo">
                 </td>
-                <td>{{file.url}}</td>
+                <td>{{file.name}}</td>
                 <td class="fileCaption"><p>{%- if file.caption -%} {{ file.caption }} {%- else -%} {{('No caption provided')}} {%- endif -%}</p></td>
                 <td>
                     <button class="deleteFileButton pull-right close" type="button"
