@@ -34,14 +34,15 @@ class LabelForm(FlaskForm):
         label=_('Label Name'),
         description=_("Label Name : Example Male, Female. \
                 Can't exceed 32 characters"),
-        validators=[DataRequired(message=_('Label name not provided.'))],
+        validators=[DataRequired(message=_('Label name not provided.')),
+                    Length(min=1, max=32)],
         filters=[strip_filter],
     )
 
     keyBinding = StringField(
         label=_('Key Binding'),
         description=_("The key bound to the label."),
-        validators=[],
+        validators=[Length(min=0, max=1)],
         filters =[strip_filter],
     )
 
@@ -67,7 +68,8 @@ class AnnotationLevelForm(FlaskForm):
         label=_('Annotation Level Name'),
         description=_("Name of the annotation level: Example Gender, Age. \
                 Can't exceed 32 characters"),
-        validators=[DataRequired(message=_('Annotation level name not provided.'))],
+        validators=[DataRequired(message=_('Annotation level name not provided.')),
+                    Length(min=1, max=32)],
         filters=[strip_filter],
     )
 
@@ -84,13 +86,6 @@ class AnnotationLevelForm(FlaskForm):
         description=_("It decides the order in which an annotator is asked to annotate the data-items."),
         validators=[DataRequired(message=_('Annotation level number not provided.'))],
     )
-
-    def validate_levelnumber(self, username):
-        """Wrap username validator for WTForms."""
-        '''
-            Validate if this level number exists if yes then raise exception
-        '''
-        pass
 
     def reset(self):
         blankData = MultiDict([ ('csrf', self.generate_csrf_token() ) ])
