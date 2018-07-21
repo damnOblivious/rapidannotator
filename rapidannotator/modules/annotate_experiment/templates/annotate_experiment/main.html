@@ -22,7 +22,7 @@
         <h3 style="display: inline"><b>{{ experiment.name }}</b></h3>
     </div>
     <div class="pull-right" style="display: inline-block">
-        <button type="button" class="btn btn-warning btn-group btn-group-inline btn-space">Undo</button>
+        <button type="button" class="undoButton btn btn-warning btn-group btn-group-inline btn-space">Undo</button>
     </div>
 
     <div class="pull-right" style="display: inline-block">
@@ -47,20 +47,21 @@
             {%- if experiment.category == 'image' -%}
                 <img class="annotationWindow" src="" alt="">
             {%- elif experiment.category == 'video' -%}
-                <video width="400" controls muted="">
+                <video width="400" controls class="pull-down">
                     <source src="" type="video/mp4">
                     Your browser does not support HTML5 video.
                 </video>
             {%- elif experiment.category == 'audio' -%}
+                <img class="audioAnnotationWindow" src="{{url_for('static', filename = 'img/audioIcon.jpeg')}}" alt="audio">
+                <audio width="400" controls muted="">
+                    <source src="" type="audio/mp3">
+                    Your browser does not support HTML5 audio.
+                </audio>
             {%- elif experiment.category == 'text' -%}
                 <pre>
- hasdfasadsf onload="";
- asdfasdf asdfl ajsd;lfasdf'sadfasdf
- dasfjlasdfjasdlfasd' sadfasdf
                 </pre>
             {%- endif -%}
         </div>
-
         {% for level in experiment.annotation_levels | sort(attribute='level_number')%}
             <div class="col-xs-7 annotationLevel hidden-element" data-index="{{loop.index}}" data-levelid="{{level.id}}">
 
@@ -103,12 +104,23 @@
     <h3>No more files to annotate. Thanks</h3>
 </div>
 
-{{ experiment.display_time.before_time }}
-
 <script type="text/javascript">
-    $(window).on('load',function() {
+    $(window).on('load', function() {
+        if({{currentFileIndex}} > {{lastFile}}) {
+            displayEnd();
+            return;
+        }
+
         var file = $('.file');
         var loopingButton = $('.toggleLooping');
+
+        $('.undoButton').on('click', function() {
+            undoAnnotation();
+        });
+
+        function undoAnnotation() {
+            previousLevel();
+        }
 
         loopingButton.on('click', function() {
             var url = "{{ url_for('annotate_experiment._toggleLooping')}}";
@@ -127,16 +139,18 @@
                     loopingButton.val("True");
                     video.attr('loop','loop');
                 }
-
                 loopingButton.text(newText);
-
             });
 
         });
 
         /*level indexing is 1 based*/
         var currentLevel = 1;
-        /*TODO No file to annotate NOTE in start */
+        /*TODO DONE No file to annotate NOTE in start */
+        /*TODO preloading of file */
+        /*TODO DONE undo feature */
+        /*TODO bind a keys to default keys */
+        /*TODO change type="video/mp4" */
 
         var labelButton = $('.labelButton');
         var selectedLabel = -1;
@@ -180,6 +194,10 @@
                     nextLevel(value);
                 }
             });
+            /* undo feature */
+            if(event.ctrlKey && y == 'z') {
+                undoAnnotation();
+            }
         });
 
         function nextLevel(label) {
@@ -193,6 +211,53 @@
             currentLevel = (currentLevel % totalAnnotationLevels) + 1;
             currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
             currentLevelBody.show();
+        }
+
+        function previousLevel() {
+            currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
+            currentLevelBody.hide();
+            if (currentLevel == 1) {
+                loadPreviousFile();
+                currentLevel = 1;
+            } else {
+                currentLevel = currentLevel - 1;
+            }
+            currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
+            currentLevelBody.show();
+        }
+
+        asdf = currentFile;
+        function loadPreviousFile() {
+            annotations = {};
+            if(currentFileIndex == {{firstFile}}) {
+
+            } else {
+
+                var data = {
+                    'experimentId' :    {{experiment.id}},
+                    'fileId' :          currentFile.id,
+                };
+                $.ajax({
+                    url: "{{ url_for('annotate_experiment.deleteAnnotation')}}",
+                    type: "DELETE",
+                    data : data,
+                });
+
+                currentFileIndex -= 1;
+                var data = {
+                    'currentFileIndex' :    currentFileIndex,
+                    'experimentId' :        {{experiment.id}},
+                };
+
+                $.ajax({
+                    url: "{{ url_for('annotate_experiment.updateCurrentFileIndex')}}",
+                    type: "PUT",
+                    data : data,
+                    success: function(response) {
+                        newFile();
+                    }
+                });
+            }
         }
 
         function fileAnnotationCompleted() {
@@ -209,16 +274,22 @@
                         displayEnd();
                         currentFileIndex = -1;
                         currentLevel = -1;
+                        if( "{{ experiment.category }}" === "video") {
+                            file.find('video')[0].pause();
+                        }
+                        if( "{{ experiment.category }}" === "audio") {
+                            file.find('audio')[0].pause();
+                        }
                     } else {
                         currentFileIndex += 1;
-                        nextFile();
+                        newFile();
                     }
                 } else {
                 }
             });
         }
 
-        function nextFile() {
+        function newFile() {
             var url = "{{ url_for('annotate_experiment._getFileDetails')}}";
             var data = {
                 'currentFileIndex' :    currentFileIndex,
@@ -245,6 +316,7 @@
             /* TODO DONE make experiment directory specific */
             /* TODO take care of same names */
             /* TODO stop clips using before_time */
+            zzz = currentFile;
 
             url = "/annotate_experiment/uploads/" + {{experiment.id}} + "/" + currentFile.content;
 
@@ -260,6 +332,15 @@
                 }
                 video[0].play();
                 video[0].currentTime = video[0].currentTime + "{{experiment.display_time.after_time}}";
+            } else if( "{{ experiment.category }}" === "audio") {
+                audio = file.find('audio');
+                audio.attr('src', url);
+                var looping = loopingButton.val();
+                if (looping == "True") {
+                    audio.attr('loop','false');
+                }
+                audio[0].play();
+                audio[0].currentTime = audio[0].currentTime + "{{experiment.display_time.after_time}}";
             } else if( "{{ experiment.category }}" === "text") {
                 file.find('pre').text(currentFile.content);
             }

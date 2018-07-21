@@ -9,7 +9,9 @@ from rapidannotator.models import User, Experiment, AnnotatorAssociation, File, 
     AnnotationInfo
 from rapidannotator.modules.annotate_experiment import blueprint
 
+from sqlalchemy import and_
 import json
+
 '''
 @blueprint.before_request
 def before_request():
@@ -29,6 +31,7 @@ def index(experimentId):
     annotatorInfo = AnnotatorAssociation.query.filter_by(user_id=current_user.id).\
                     filter_by(experiment_id=experimentId).first()
     currentFileIndex = annotatorInfo.current
+    firstFile = annotatorInfo.start
     lastFile = annotatorInfo.end
 
     if lastFile == -1:
@@ -41,7 +44,7 @@ def index(experimentId):
         currentFile = _getFile(experimentId, currentFileIndex)
     else:
         currentFile = []
-    ''' TODO Display something else if no file is added '''
+    ''' TODO DONE Display something else if no file is added '''
     ''' TODO annotation as per annotation number '''
     ''' TODO move current back to original value if any file was deleted '''
 
@@ -50,6 +53,7 @@ def index(experimentId):
         currentFile = currentFile,
         currentFileIndex = currentFileIndex,
         lastFile = lastFile,
+        firstFile = firstFile,
     )
 
 '''
@@ -60,6 +64,12 @@ def index(experimentId):
 def _getFile(experimentId, fileIndex):
     experiment = Experiment.query.filter_by(id=experimentId).first()
     currentFile = experiment.files.order_by(File.id)[fileIndex]
+
+    from rapidannotator import app
+    import sys
+    app.logger.info("pppppppppppppppppppppppppppppppppppppppppp")
+    app.logger.info(fileIndex)
+    app.logger.info(currentFile)
 
     ''' TODO add filename to response '''
     currentFile = {
@@ -73,9 +83,10 @@ def _getFile(experimentId, fileIndex):
     TODO? NOT USED YET
     .. updates the value of current to the value given in params
 '''
-def updateCurrentFileIndex(experimentId, currentFileIndex):
-    annotatorInfo = AnnotatorAssociation.query.filter_by(user_id=current_user.id).\
-                    filter_by(experiment_id=experimentId).first()
+def _updateCurrentFileIndex(experimentId, currentFileIndex):
+    annotatorInfo = AnnotatorAssociation.query.filter(and_\
+                        (AnnotatorAssociation.user_id==current_user.id, \
+                        AnnotatorAssociation.experiment_id==experimentId)).first()
 
     annotatorInfo.current = currentFileIndex
     db.session.commit()
@@ -84,6 +95,43 @@ def updateCurrentFileIndex(experimentId, currentFileIndex):
     }
 
     return jsonify(response)
+
+'''
+    wrapper over _updateCurrentFileIndex that will be called by client
+'''
+@blueprint.route('/updateCurrentFileIndex', methods=['POST','GET','PUT'])
+def updateCurrentFileIndex():
+
+    ''' in PUT request data is received in request.form '''
+    experimentId = request.form.get('experimentId', None)
+    currentFileIndex = request.form.get('currentFileIndex', None)
+
+    _updateCurrentFileIndex(experimentId, int(currentFileIndex))
+    response = {
+        'success' : True,
+    }
+    return jsonify(response)
+
+
+''' delete the annotation of the specified file & experiment '''
+@blueprint.route('/deleteAnnotation', methods=['DELETE'])
+def deleteAnnotation():
+
+    ''' in DELETE request data is received in request.form '''
+
+    experimentId = request.form.get('experimentId', None)
+    fileId = request.form.get('fileId', None)
+
+    AnnotationInfo.query.filter(and_(AnnotationInfo.user_id==current_user.id, \
+                                    AnnotationInfo.file_id==fileId)\
+                                    ).delete()
+
+    db.session.commit()
+    response = {
+        'success' : True,
+    }
+    return jsonify(response)
+
 
 '''
     wrapper over _getFile that will be called by client
