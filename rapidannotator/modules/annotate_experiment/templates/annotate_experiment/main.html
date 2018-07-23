@@ -63,9 +63,6 @@
                 </pre>
             {%- endif -%}
         </div>
-        <div class="fileCaption">
-            <h4></h4>
-        </div>
         {% endfor %}
 
         {% for level in experiment.annotation_levels | sort(attribute='level_number')%}
@@ -99,6 +96,10 @@
 
             </div>
         {% endfor %}
+    </div>
+
+    <div class="fileCaption">
+        <h4></h4>
     </div>
 
 </div>
@@ -296,8 +297,6 @@
                     'experimentId' :        {{experiment.id}},
                 };
 
-                currentLoadedFile = 0;
-                preLoadedTill = 0;
 
                 $.ajax({
                     url: "{{ url_for('annotate_experiment.updateCurrentFileIndex')}}",
@@ -305,6 +304,8 @@
                     data : data,
                     success: function(response) {
                         $(".file[data-index='" + currentLoadedFile + "']").hide();
+                        currentLoadedFile = 0;
+                        preLoadedTill = 0;
                         newFile(0, currentFileIndex);
                         $(".file[data-index='" + 0 + "']").show();
                         preLoadFiles();

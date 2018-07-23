@@ -74,6 +74,7 @@ def _getFile(experimentId, fileIndex):
     ''' TODO add filename to response '''
     currentFile = {
         'id' : currentFile.id,
+        'name' : currentFile.name,
         'content' : currentFile.content,
         'caption' : currentFile.caption,
     }
