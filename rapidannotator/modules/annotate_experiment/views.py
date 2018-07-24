@@ -6,7 +6,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from rapidannotator import db
 from rapidannotator import bcrypt
 from rapidannotator.models import User, Experiment, AnnotatorAssociation, File, \
-    AnnotationInfo
+    AnnotationInfo, AnnotationLevel, Label
 from rapidannotator.modules.annotate_experiment import blueprint
 
 from sqlalchemy import and_
@@ -30,6 +30,7 @@ def index(experimentId):
     experiment = Experiment.query.filter_by(id=experimentId).first()
     annotatorInfo = AnnotatorAssociation.query.filter_by(user_id=current_user.id).\
                     filter_by(experiment_id=experimentId).first()
+    keyBindingDict = makeKeyBindingDict(experimentId)
     currentFileIndex = annotatorInfo.current
     firstFile = annotatorInfo.start
     lastFile = annotatorInfo.end
@@ -44,6 +45,8 @@ def index(experimentId):
         currentFile = _getFile(experimentId, currentFileIndex)
     else:
         currentFile = []
+
+
     ''' TODO DONE Display something else if no file is added '''
     ''' TODO annotation as per annotation number '''
     ''' TODO move current back to original value if any file was deleted '''
@@ -54,7 +57,42 @@ def index(experimentId):
         currentFileIndex = currentFileIndex,
         lastFile = lastFile,
         firstFile = firstFile,
+        keyBindingDict = keyBindingDict,
     )
+
+def makeKeyBindingDict(experimentId):
+    levels = AnnotationLevel.query.filter_by(experiment_id=experimentId).all()
+    index, keyBindingDict = 1, {}
+
+    for level in levels:
+        labels = Label.query.filter_by(annotation_id=level.id).all()
+        keySet, labelDict = [], {}
+
+        for label in labels:
+            if label.key_binding:
+                keySet.append(label.key_binding)
+
+        for label in labels:
+            if not label.key_binding:
+                defaultKey = getDefaultKey(keySet)
+                keySet.append(defaultKey)
+
+            key = label.key_binding if label.key_binding else defaultKey
+            labelDict[label.id] = key
+
+        keyBindingDict[index] = labelDict
+        index += 1
+
+    return keyBindingDict
+
+def getDefaultKey(keySet):
+    for i in range(26):
+        k = chr(i + 97)
+        if k not in keySet:
+            return k
+    return ''
+
+
 
 '''
     .. params:
@@ -65,13 +103,6 @@ def _getFile(experimentId, fileIndex):
     experiment = Experiment.query.filter_by(id=experimentId).first()
     currentFile = experiment.files.order_by(File.id)[fileIndex]
 
-    from rapidannotator import app
-    import sys
-    app.logger.info("pppppppppppppppppppppppppppppppppppppppppp")
-    app.logger.info(fileIndex)
-    app.logger.info(currentFile)
-
-    ''' TODO add filename to response '''
     currentFile = {
         'id' : currentFile.id,
         'name' : currentFile.name,

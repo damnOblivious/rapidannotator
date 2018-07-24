@@ -72,6 +72,8 @@
 
         {% for level in experiment.annotation_levels | sort(attribute='level_number')%}
             <div class="col-xs-7 annotationLevel hidden-element" data-index="{{loop.index}}" data-levelid="{{level.id}}">
+                {%- set levelIndex = loop.index %}
+
 
                 <h3 class="lableName">
                     <b>{{level.name}}</b>
@@ -87,7 +89,7 @@
                 <ul class="lableKeyBindings">
                     {% for label in level.labels %}
                     <li data-key="{{label.key_binding}}" data-labelid="{{label.id}}">
-                        <p>{{label.key_binding}} : {{label.name}}</p>
+                        <p> {{keyBindingDict[levelIndex][label.id]}} : {{label.name}}</p>
                     </li>
                     {% endfor %}
                 </ul>
@@ -112,6 +114,8 @@
 <div class="container hidden-element thanksNote">
     <h3>No more files to annotate. Thanks</h3>
 </div>
+
+
 
 <script type="text/javascript">
     $(window).on('load', function() {
@@ -146,27 +150,26 @@
 
         });
 
-        /*level indexing is 1 based*/
-        var currentLevel = 1;
         /* TODO stop clips using before_time */
         /* TODO change type="video/mp4" */
         /* TODO add="video/avi" */
 
         /* TODO take care of same names */
-        /* TODO bind a keys to default keys */
+        /* TODO DONE bind a keys to default keys */
 
         /* TODO DONE preloading of files */
         /* TODO DONE No file to annotate NOTE in start */
         /* TODO DONE undo feature */
 
+        /*level indexing is 1 based*/
+        var currentLevel = 1;
         var labelButton = $('.labelButton');
         var undoButton = $('.undoButton');
         var selectedLabel = -1;
         var annotations = {};
-        var keyBindingDict = {};
         var totalAnnotationLevels = {{ totalAnnotationLevels }};
         currentFileIndex = {{ currentFileIndex }};
-        makeKeyBindingDict();
+        var keyBindingDict = {{keyBindingDict | safe}};
 
         var preLoadLimit = 5;
         var currentLoadedFile = 0;
@@ -191,22 +194,6 @@
         newFile(0, currentFileIndex, true);
         preLoadFiles();
 
-
-        function makeKeyBindingDict() {
-            $('.annotationLevel').each( function( index ) {
-                var levelId = $(this).data("levelid");
-                var labelDict = {};
-                $(this).find('.lableKeyBindings li').each(function() {
-                    var key = $(this).data('key');
-                    var labelid = $(this).data('labelid');
-                    labelDict[key] = labelid;
-                })
-                /*index + 1 since we use 1 based indexing*/
-                keyBindingDict[index + 1] = labelDict;
-            })
-
-        }
-
         /*show only first level*/
         $(".annotationLevel[data-index=1]").show();
 
@@ -220,8 +207,8 @@
             var y = String.fromCharCode(x).toLowerCase();
             /*for the dict in current index check if the key is there*/
             $.each( keyBindingDict[currentLevel], function( key, value ) {
-                if( y == key ) {
-                    nextLevel(value);
+                if( y == value ) {
+                    nextLevel(key);
                 }
             });
             /* undo feature */
