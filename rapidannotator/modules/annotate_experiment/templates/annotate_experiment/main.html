@@ -25,6 +25,8 @@
         <button type="button" class="undoButton btn btn-warning btn-group btn-group-inline btn-space">Undo</button>
     </div>
 
+{{keyBindingDict}}
+
     <div class="pull-right" style="display: inline-block">
         {%- if (experiment.category == 'video') or (experiment.category == 'audio') -%}
         <button class="toggleLooping btn btn-primary btn-group btn-group-inline btn-space"
@@ -155,8 +157,8 @@
         /* TODO add="video/avi" */
 
         /* TODO take care of same names */
-        /* TODO DONE bind a keys to default keys */
 
+        /* TODO DONE bind a keys to default keys */
         /* TODO DONE preloading of files */
         /* TODO DONE No file to annotate NOTE in start */
         /* TODO DONE undo feature */

@@ -61,7 +61,7 @@ def index(experimentId):
     )
 
 def makeKeyBindingDict(experimentId):
-    levels = AnnotationLevel.query.filter_by(experiment_id=experimentId).all()
+    levels = AnnotationLevel.query.filter_by(experiment_id=experimentId).order_by(AnnotationLevel.level_number)
     index, keyBindingDict = 1, {}
 
     for level in levels:
