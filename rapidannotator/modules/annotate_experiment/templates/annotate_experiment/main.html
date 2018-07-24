@@ -44,11 +44,11 @@
     <div class="row">
 
         {% for i in range(5) %}
-        <div class="file col-xs-5 hidden-element" data-index={{loop.index0}}>
+        <div class="file col-xs-5 hidden-element" data-index={{loop.index0}} data-fileid=1>
             {%- if experiment.category == 'image' -%}
                 <img class="annotationWindow" src="" alt="">
             {%- elif experiment.category == 'video' -%}
-                <video width="400" controls class="pull-down">
+                <video width="400" controls>
                     <source src="" type="video/mp4">
                     Your browser does not support HTML5 video.
                 </video>
@@ -62,6 +62,11 @@
                 <pre>
                 </pre>
             {%- endif -%}
+
+            <div class="caption hidden-element">
+                <h4></h4>
+            </div>
+
         </div>
         {% endfor %}
 
@@ -111,25 +116,13 @@
 <script type="text/javascript">
     $(window).on('load', function() {
 
-        function newFile(divIndex, fileIndex) {
-            var url = "{{ url_for('annotate_experiment._getFileDetails')}}";
-            var data = {
-                'currentFileIndex' :    fileIndex,
-                'experimentId' :        {{experiment.id}},
-            };
-
-            $.getJSON(url , data, function(newFile) {
-                updateFile(divIndex, newFile);
-            });
-        }
-
         if({{currentFileIndex}} > {{lastFile}}) {
             displayEnd();
             return;
         }
 
         var file = $('.file');
-        var loopingButton = $('.toggleLooping');
+        loopingButton = $('.toggleLooping');
 
         loopingButton.on('click', function() {
             var url = "{{ url_for('annotate_experiment._toggleLooping')}}";
@@ -138,7 +131,7 @@
             $.getJSON(url, data, function(response) {
                 var looping = loopingButton.val();
                 var newText = "";
-                var clip = ("{{experiment.category}}" === "text") ? file.find('video') : file.find('audio');
+                var clip = ("{{experiment.category}}" === "video") ? file.find('video') : file.find('audio');
                 if(looping == "True") {
                     newText = "Turn on looping";
                     loopingButton.val("False");
@@ -155,26 +148,29 @@
 
         /*level indexing is 1 based*/
         var currentLevel = 1;
-        /* TODO take care of same names */
         /* TODO stop clips using before_time */
-        /* TODO preloading of files */
-        /* TODO bind a keys to default keys */
         /* TODO change type="video/mp4" */
+        /* TODO add="video/avi" */
+
+        /* TODO take care of same names */
+        /* TODO bind a keys to default keys */
+
+        /* TODO DONE preloading of files */
         /* TODO DONE No file to annotate NOTE in start */
         /* TODO DONE undo feature */
 
         var labelButton = $('.labelButton');
+        var undoButton = $('.undoButton');
         var selectedLabel = -1;
         var annotations = {};
         var keyBindingDict = {};
         var totalAnnotationLevels = {{ totalAnnotationLevels }};
         currentFileIndex = {{ currentFileIndex }};
-        var currentFile = {{ currentFile | safe }};
         makeKeyBindingDict();
 
         var preLoadLimit = 5;
-         currentLoadedFile = 0;
-         preLoadedTill = 0;
+        var currentLoadedFile = 0;
+        var preLoadedTill = 0;
 
         function preLoadFiles() {
             var excessFiles = (preLoadedTill - currentLoadedFile + preLoadLimit) % preLoadLimit;
@@ -188,13 +184,11 @@
                     first check if the file number is valid
                     then make the api call
                 */
-                if( newFileIndex <= {{ lastFile }} ) newFile(divIndex, newFileIndex);
+                if( newFileIndex <= {{ lastFile }} ) newFile(divIndex, newFileIndex, false);
             }
         }
 
-        newFile(0, currentFileIndex);
-        firstNewFile = $(".file[data-index='" + 0 + "']");
-        firstNewFile.show();
+        newFile(0, currentFileIndex, true);
         preLoadFiles();
 
 
@@ -262,8 +256,12 @@
             currentLevelBody.show();
         }
 
-        $('.undoButton').on('click', function() {
+        undoButton.on('click', function() {
+            undoButton.attr("disabled", "disabled");
             undoAnnotation();
+            window.setTimeout(function() {
+                undoButton.removeAttr("disabled");
+            }, [500]);
         });
 
         function undoAnnotation() {
@@ -281,9 +279,10 @@
 
             } else {
 
+                var currentFileId = $(".file[data-index='" + currentLoadedFile + "']").data('fileid');
                 var data = {
                     'experimentId' :    {{experiment.id}},
-                    'fileId' :          currentFile.id,
+                    'fileId' :          currentFileId,
                 };
                 $.ajax({
                     url: "{{ url_for('annotate_experiment.deleteAnnotation')}}",
@@ -306,8 +305,7 @@
                         $(".file[data-index='" + currentLoadedFile + "']").hide();
                         currentLoadedFile = 0;
                         preLoadedTill = 0;
-                        newFile(0, currentFileIndex);
-                        $(".file[data-index='" + 0 + "']").show();
+                        newFile(0, currentFileIndex, true);
                         preLoadFiles();
                     }
                 });
@@ -315,9 +313,12 @@
         }
 
         function fileAnnotationCompleted() {
+
             var url = "{{ url_for('annotate_experiment._addAnnotationInfo')}}";
+            var currentFileId = $(".file[data-index='" + currentLoadedFile + "']").data('fileid');
+
             var data = {
-                'fileId' :          currentFile.id,
+                'fileId' :          currentFileId,
                 'annotations' :     annotations,
             };
             data = JSON.stringify(data);
@@ -328,21 +329,59 @@
                         displayEnd();
                         currentFileIndex = -1;
                         currentLevel = -1;
-                        if( "{{ experiment.category }}" === "video") {
-                            file.find('video')[0].pause();
-                        }
-                        if( "{{ experiment.category }}" === "audio") {
-                            file.find('audio')[0].pause();
+                        if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
+                            var f = $(".file[data-index='" + currentLoadedFile + "']");
+                            f.find("{{ experiment.category }}")[0].pause();
                         }
                     } else {
                         currentFileIndex += 1;
                         $(".file[data-index='" + currentLoadedFile + "']").hide();
                         currentLoadedFile = (currentLoadedFile + 1) % preLoadLimit;
                         preLoadFiles();
-                        $(".file[data-index='" + currentLoadedFile + "']").show();
+                        showCurrentFile(currentLoadedFile);
                     }
                 }
             });
+        }
+
+        function newFile(divIndex, fileIndex, showCurrent) {
+            var url = "{{ url_for('annotate_experiment._getFileDetails')}}";
+            var data = {
+                'currentFileIndex' :    fileIndex,
+                'experimentId' :        {{experiment.id}},
+            };
+
+            $.getJSON(url , data, function(newFile) {
+                updateFile(divIndex, newFile);
+                if (showCurrent) {
+                    showCurrentFile(divIndex);
+                }
+            });
+        }
+
+        function showCurrentFile(divIndex) {
+            loadedFile = $(".file[data-index='" + divIndex + "']");
+            loadedFile.show();
+
+            if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
+                clip = loadedFile.find("{{ experiment.category }}");
+                var looping = loopingButton.val();
+                if (looping == "True") {
+                    clip.attr('loop','loop');
+                }
+                clip[0].play();
+
+                clip[0].addEventListener("timeupdate", function(){
+                    if (clip[0].currentTime == 0) {
+                        clip[0].currentTime = clip[0].currentTime + "{{experiment.display_time.before_time}}";
+                    }
+                });
+
+            }
+
+            var fileCaption = loadedFile.find('.caption h4').text();
+            $('.fileCaption h4').text(fileCaption);
+
         }
 
         function updateFile(index, fileToLoad) {
@@ -351,39 +390,26 @@
             keep dynamic filename
             */
 
-
-            loadedFile = $(".file[data-index='" + index + "']");
+            var loadedDiv = $(".file[data-index='" + index + "']");
 
             var url = "/annotate_experiment/uploads/" + {{experiment.id}} + "/" + fileToLoad.content;
 
             if( "{{ experiment.category }}" === "image") {
-                loadedFile.find('img').attr('src', url);
-                loadedFile.find('img').attr('alt', caption);
+                loadedDiv.find('img').attr('src', url);
+                loadedDiv.find('img').attr('alt', caption);
             } else if( "{{ experiment.category }}" === "video") {
-                video = loadedFile.find('video');
+                video = loadedDiv.find('video');
                 video.attr('src', url);
-                var looping = loopingButton.val();
-                if (looping == "True") {
-                    video.attr('loop','false');
-                }
-                video[0].play();
-                video[0].currentTime = video[0].currentTime + "{{experiment.display_time.after_time}}";
             } else if( "{{ experiment.category }}" === "audio") {
-                audio = loadedFile.find('audio');
+                audio = loadedDiv.find('audio');
                 audio.attr('src', url);
-                var looping = loopingButton.val();
-                if (looping == "True") {
-                    audio.attr('loop','false');
-                }
-                audio[0].play();
-                audio[0].currentTime = audio[0].currentTime + "{{experiment.display_time.after_time}}";
             } else if( "{{ experiment.category }}" === "text") {
-                loadedFile.find('pre').text(fileToLoad.content);
+                loadedDiv.find('pre').text(fileToLoad.content);
             }
 
-            var caption = fileToLoad.name;
-            $('.fileCaption h4').text(caption);
-
+            var caption = fileToLoad.caption;
+            loadedDiv.find('.caption h4').text(caption);
+            loadedDiv.data("fileid", fileToLoad.id);
         }
 
     });
