@@ -123,7 +123,7 @@
                 <td>
                     <img class="displayImages" src="{{url_for('static', filename = 'img/videoIcon.png')}}" alt="Red Hen Logo">
                 </td>
-                <td>{{file.name}}</td>
+                <td class="fileName"><p>{{file.name}}</p></td>
                 <td class="fileCaption"><p>{%- if file.caption -%} {{ file.caption }} {%- else -%} {{('No caption provided')}} {%- endif -%}</p></td>
                 <td>
                     <button class="deleteFileButton pull-right close" type="button"
@@ -249,6 +249,7 @@ $(function() {
     function saveEdit() {
     	var area = document.getElementsByTagName('TEXTAREA')[0];
         currentEditFileId = $("TEXTAREA").closest("tr").attr('value');
+        var parentClassList = area.parentNode.classList;
     	var y = document.createElement('P');
     	var z = area.parentNode;
     	y.innerHTML = area.value;
@@ -256,7 +257,13 @@ $(function() {
     	z.removeChild(area);
     	z.removeChild(document.getElementsByClassName('saveEditButton')[0]);
         if($.isNumeric(currentEditFileId)) {
-            saveCaptionInDatabase(currentEditFileId, y.innerHTML);
+            parentClassList.forEach(function(key, value) {
+                if(key == "fileName") {
+                    saveNameInDatabase(currentEditFileId, y.innerHTML);
+                } else if(key == "fileCaption") {
+                    saveCaptionInDatabase(currentEditFileId, y.innerHTML);
+                }
+            } );
         }
     	editing = false;
     }
@@ -273,6 +280,21 @@ $(function() {
         }
     });
 
+    function saveNameInDatabase(fileId, caption) {
+        var fileName = $('#fileTable tbody tr[value=' + fileId + '] .fileName p').text();
+
+        var url = "{{ url_for('add_experiment._updateFileName')}}";
+        var data = {
+            'fileId' :  fileId,
+            'name' : fileName,
+        };
+
+        $.getJSON(url , data, function(response) {
+            if(response.success) {
+            } else {
+            }
+        });
+    }
 
     function saveCaptionInDatabase(fileId, caption) {
         var fileCaption = $('#fileTable tbody tr[value=' + fileId + '] .fileCaption p').text();
@@ -280,7 +302,6 @@ $(function() {
 
         var url = "{{ url_for('add_experiment._updateFileCaption')}}";
         var data = {
-            'experimentCategory' : '{{ experiment.category }}',
             'fileId' :  fileId,
             'caption' : fileCaption,
         };
@@ -348,10 +369,11 @@ $(function() {
 
         var row = $("<tr/>", rowAttributeDict);
         cell1 = $("<td/>", {
-            "style" :       "width: 10.0%"
+            "style" :       "width: 10.0%",
         });
         cell2 = $("<td/>", {
-            "style" :       "width: 20.0%"
+            "style" :       "width: 20.0%",
+            "class" :       "fileName",
         });
         cell3 = $("<td/>", {
             "style" :       "width: 67.0%",
@@ -359,7 +381,7 @@ $(function() {
         });
 
         cell4 = $("<td/>", {
-            "style" :     "width: 3.0%"
+            "style" :     "width: 3.0%",
         });
 
         var imgAttributeDict = {
@@ -370,6 +392,7 @@ $(function() {
         var imageToAdd = $("<img/>", imgAttributeDict);
 
         var cell3Text = "<p>No caption provided</p>";
+        var cell2Text = "<p>" + file.name + "</p>";
         var buttonAttributeDict = {
             "type" :            "button",
             "class" :           "deleteFileButton pull-right close",
@@ -380,7 +403,7 @@ $(function() {
         buttonToAdd.append("&times;");
 
         imageToAdd.appendTo(cell1);
-        cell2.append(file.name);
+        cell2.append(cell2Text);
         cell3.append(cell3Text);
         buttonToAdd.appendTo(cell4);
         row.append(cell1,cell2,cell3,cell4);
@@ -454,9 +477,12 @@ $(function() {
 
             BeforeUpload: function (up, file) {
                 var fileCaption = $('#fileTable tbody tr[value=' + file.id + '] .fileCaption p').text();
+                var fileName = $('#fileTable tbody tr[value=' + file.id + '] .fileName p').text();
+                console.log("filenme yeh hai ",fileName);
                 if( fileCaption != 'No caption provided' && fileCaption != '') {
                     up.setOption('multipart_params', {fileCaption : fileCaption});
                 }
+                up.setOption('multipart_params', {fileName : fileName});
             },
 
             UploadFile: function(up, file) {

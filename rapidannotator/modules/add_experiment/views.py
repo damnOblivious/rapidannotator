@@ -306,7 +306,7 @@ def _uploadFiles():
         if flaskFile:
             experimentId = request.form.get('experimentId', None)
             experiment = Experiment.query.filter_by(id=experimentId).first()
-            filename = secure_filename(flaskFile.filename)
+            filename = secure_filename(request.form.get('fileName', None))
             newFile = File(name=filename)
             experiment.files.append(newFile)
             fileCaption = request.form.get('fileCaption', None)
@@ -335,7 +335,7 @@ def _uploadFiles():
             db.session.commit()
 
             ''' TODO? remove "content" from response '''
-            ''' TODO make file name editable '''
+            ''' TODO DONE make file name editable '''
 
             response = {
                 'success' : True,
@@ -375,7 +375,7 @@ def _deleteFile():
             }
             return jsonify(response)
 
-        filePath = os.path.join(experimentDir, currFile.url)
+        filePath = os.path.join(experimentDir, currFile.content)
         os.remove(filePath)
 
     db.session.delete(currFile)
@@ -385,14 +385,41 @@ def _deleteFile():
     }
     return jsonify(response)
 
+@blueprint.route('/_updateFileName', methods=['POST','GET'])
+def _updateFileName():
+
+    from rapidannotator import app
+
+    fileId = request.args.get('fileId', None)
+    currentFile = File.query.filter_by(id=fileId).first()
+    experiment = Experiment.query.filter_by(id=currentFile.experiment_id).first()
+
+    updatedName = secure_filename(request.args.get('name', currentFile.name))
+
+    if experiment.category != 'text':
+        experimentDir = os.path.join(app.config['UPLOAD_FOLDER'],
+                                    str(currentFile.experiment_id))
+
+        currentFilePath = os.path.join(experimentDir, currentFile.name)
+        newFilePath = os.path.join(experimentDir, updatedName)
+        os.rename(currentFilePath, newFilePath)
+
+    currentFile.name = updatedName
+
+    db.session.commit()
+    response = {
+        'success' : True,
+    }
+
+    return jsonify(response)
+
+
 @blueprint.route('/_updateFileCaption', methods=['POST','GET'])
 def _updateFileCaption():
 
-    ''' TODO remove experimentCategory '''
-    experimentCategory = request.args.get('experimentCategory', None)
     fileId = request.args.get('fileId', None)
-
     currentFile = File.query.filter_by(id=fileId).first()
+
     currentFile.caption = request.args.get('caption', None)
 
     db.session.commit()
@@ -491,6 +518,7 @@ def _deleteOwner():
     return jsonify(response)
 
 
+''' TODO delete experiment - > delete folder '''
 @blueprint.route('/_deleteExperiment', methods=['POST','GET'])
 def _deleteExperiment():
 
