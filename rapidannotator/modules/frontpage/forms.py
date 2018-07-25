@@ -14,7 +14,7 @@ from wtforms.validators import DataRequired, EqualTo, StopValidation, \
 from rapidannotator.models import User
 from rapidannotator.validators import USERNAME_RULES, validate_username
 
-
+''' TODO! min max lengths ''' 
 def strip_filter(text):
     """Filter for trimming whitespace.
 

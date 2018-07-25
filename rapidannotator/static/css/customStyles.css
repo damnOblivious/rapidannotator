@@ -102,6 +102,11 @@
 
 .annotationWindow {
     height : 30em;
+    width : 25em;
+}
+
+.audioAnnotationWindow {
+    height : 25em;
     width : 30em;
 }
 

@@ -302,7 +302,7 @@
                 'ownerId' : currentOwner,
                 'experimentId' : {{ experiment.id }},
             };
-            /* TODO break into functions */
+            /* (TODO) break into functions */
             $.getJSON(url , data, function(response) {
                 if(response.success) {
                     console.log(response);
@@ -333,7 +333,7 @@
         })
 
 
-        /* TODO verify if there is need to bifurcate delete and edit */
+        /* (TODO) verify if there is need to bifurcate delete and edit */
         $("body").on("click", selectedAnnotatorButton, function() {
             currentAnnotator = $(this).parent().attr('value');
             var startFileNumber = $(this).parent().data('start');

@@ -47,9 +47,7 @@ def index(experimentId):
         currentFile = []
 
 
-    ''' TODO DONE Display something else if no file is added '''
-    ''' TODO annotation as per annotation number '''
-    ''' TODO move current back to original value if any file was deleted '''
+    ''' TODO! move current back to original value if any file was deleted '''
 
     return render_template('annotate_experiment/main.html',
         experiment = experiment,

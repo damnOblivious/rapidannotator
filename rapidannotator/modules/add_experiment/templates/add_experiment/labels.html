@@ -303,7 +303,8 @@
         var addAnotherLevel = false;
 
 
-        /* TODO add this to all files */
+        /* (TODO) bifurcate JS */
+        /* ((TODO)) add this to all files */
         $('.modal').on('shown.bs.modal', function () {
             ll = $(this).find("input:first");
             $(this).find("input:first").focus();
@@ -562,7 +563,7 @@
 
             parentSpan.append(nameSpan, keySpan, trashIconSpan, editIconSpan);
 
-            /* NOTE TODO use value based selection Instead*/
+            /* NOTE (TODO) use value based selection Instead*/
             var annotation_levelClass = "annotation_level_" + labelTuple['annotationId']
             $("." + annotation_levelClass + " .labelCollection").append(parentSpan);
 

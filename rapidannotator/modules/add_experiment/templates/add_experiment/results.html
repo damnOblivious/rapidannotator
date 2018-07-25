@@ -53,7 +53,7 @@
                 {% for file in experiment.files %}
                     <tr>
                         <td>
-                            {{ file.url }}
+                            {{ file.name }}
                          </td>
                          {% for level in experiment.annotation_levels %}
                              <td>
@@ -118,6 +118,7 @@
             $.getJSON(url , data, function(response) {
                 if(response.success) {
                     $('#discardAnnotations').modal('hide');
+                    location.reload();
                 } else {
                 }
             });

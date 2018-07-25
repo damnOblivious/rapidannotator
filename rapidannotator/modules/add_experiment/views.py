@@ -178,9 +178,6 @@ def _addAnnotationLevel():
         errors = errors,
     )
 
-''' TODO DONE no 2 labels should have same keybinding '''
-''' TODO DONE no 2 levels should have same number '''
-''' TODO DONE display level as per number '''
 @blueprint.route('/_addLabels', methods=['POST','GET'])
 def _addLabels():
 
@@ -279,16 +276,6 @@ def _editLabel():
     return jsonify(response)
 
 
-
-
-
-'''
-    TODO
-    .. extract all text from the text file and store in database
-    .. check for the allowed filename
-    .. delete from folder too
-'''
-
 @blueprint.route('/_uploadFiles', methods=['POST','GET'])
 def _uploadFiles():
     from rapidannotator import app
@@ -302,7 +289,7 @@ def _uploadFiles():
         if flaskFile.filename == '':
             flash('No selected file')
             return response
-        ''' TODO also check for the allowed filename '''
+        ''' TODO? also check for the allowed filename '''
         if flaskFile:
             experimentId = request.form.get('experimentId', None)
             experiment = Experiment.query.filter_by(id=experimentId).first()
@@ -334,25 +321,21 @@ def _uploadFiles():
 
             db.session.commit()
 
-            ''' TODO? remove "content" from response '''
-            ''' TODO DONE make file name editable '''
-
             response = {
                 'success' : True,
                 'fileId' : newFile.id,
-                'content' : newFile.content,
             }
 
             return jsonify(response)
 
-    response = "greatNahiHai"
+    response = "success"
 
     return jsonify(response)
 
 @blueprint.route('/_deleteFile', methods=['POST','GET'])
 def _deleteFile():
 
-    ''' TODO check when to import app '''
+    ''' TODO? check when to import app '''
     from rapidannotator import app
 
     experimentCategory = request.args.get('experimentCategory', None)
@@ -444,10 +427,6 @@ def viewSettings(experimentId):
 
     totalFiles = experiment.files.count()
 
-    # if experiment.category == 'text':
-    #     pass
-    # else:
-
     return render_template('add_experiment/settings.html',
         users = users,
         experiment = experiment,
@@ -518,7 +497,6 @@ def _deleteOwner():
     return jsonify(response)
 
 
-''' TODO delete experiment - > delete folder '''
 @blueprint.route('/_deleteExperiment', methods=['POST','GET'])
 def _deleteExperiment():
 
@@ -527,6 +505,14 @@ def _deleteExperiment():
     experiment.owners = []
     db.session.delete(experiment)
     db.session.commit()
+
+    import shutil
+    from rapidannotator import app
+    experimentDir = os.path.join(app.config['UPLOAD_FOLDER'],
+                            str(experimentId))
+
+    if os.path.exists(experimentDir):
+        shutil.rmtree(experimentDir)
 
 
     response = {
@@ -543,16 +529,6 @@ def viewResults(experimentId):
     experiment = Experiment.query.filter_by(id=experimentId).first()
     totalFiles = experiment.files.count()
 
-    # if experiment.category == 'text':
-    #     pass
-    # else:
-
-    import sys
-    from rapidannotator import app
-    app.logger.info("vvvvvvvvvvvvvvvvvv vvvvvvvvvvvvvvvv")
-    annotations = {}
-
-    ''' TODO take care of text_files and files '''
     for f in experiment.files:
         annotation = {}
         fileAnnotations = AnnotationInfo.query.filter_by(file_id=f.id).all()
