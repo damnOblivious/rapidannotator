@@ -5,21 +5,17 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 from rapidannotator import db
 from rapidannotator import bcrypt
-from rapidannotator.models import User, Experiment
+from rapidannotator.models import User, Experiment, RightsRequest
 from rapidannotator.modules.home import blueprint
 from rapidannotator.modules.home.forms import AddExperimentForm
 
-'''
 @blueprint.before_request
 def before_request():
-    if not current_user.is_authenticated:
+    if current_app.login_manager._login_disabled:
+        pass
+    elif not current_user.is_authenticated:
         return current_app.login_manager.unauthorized()
-'''
 
-@blueprint.before_request
-@login_required
-def before_request():
-    pass
 
 
 @blueprint.route('/')
@@ -57,6 +53,40 @@ def addExperiment():
         addExperimentForm = addExperimentForm,
         errors = errors,)
 
+
+@blueprint.route('/askRights', methods=['GET', 'POST'])
+def askRights():
+    message = request.args.get('message', '')
+    role = request.args.get('role', 'experimenter')
+
+    rightsRequest = RightsRequest(
+        user_id = current_user.id,
+        username = current_user.username,
+        role = role,
+        message = message,
+    )
+
+    db.session.add(rightsRequest)
+    db.session.commit()
+
+    response = {}
+    response['success'] = True
+
+    return jsonify(response)
+
+''' check for what right do the user has / requested for '''
+@blueprint.route('/checkRights', methods=['GET', 'POST'])
+def checkRights():
+
+    requestsSent = RightsRequest.query.filter_by(user_id=current_user.id)
+    response = {}
+    response['success'] = True
+
+    for r in requestsSent:
+        if r.role == "experimenter": response['experimenterRequest'] = True
+        if r.role == "admin": response['adminRequest'] = True
+
+    return jsonify(response)
 
 @blueprint.route('/logout', methods=['POST'])
 def logout():

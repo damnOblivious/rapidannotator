@@ -89,12 +89,13 @@
 
 </div>
 
-
-<div class="container">
-  <a data-toggle="modal" data-target="#experimentDetailsId" class="btn btn-primary pull-right">
-      Add Experiment
-  </a>
-</div>
+{%- if current_user.is_experimenter() -%}
+    <div class="container">
+      <a data-toggle="modal" data-target="#experimentDetailsId" class="btn btn-primary pull-right">
+          Add Experiment
+      </a>
+    </div>
+{%- endif -%}
 
 
 <!-- Add Experiment Modal -->
