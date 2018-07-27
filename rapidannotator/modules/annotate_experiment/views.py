@@ -8,23 +8,20 @@ from rapidannotator import bcrypt
 from rapidannotator.models import User, Experiment, AnnotatorAssociation, File, \
     AnnotationInfo, AnnotationLevel, Label
 from rapidannotator.modules.annotate_experiment import blueprint
+from .api import isAnnotator
 
 from sqlalchemy import and_
 import json
 
-'''
 @blueprint.before_request
 def before_request():
-    if not current_user.is_authenticated:
-        return current_app.login_manager.unauthorized()
-'''
-
-@blueprint.before_request
-@login_required
-def before_request():
-    pass
+    if current_app.login_manager._login_disabled:
+        pass
+    elif not current_user.is_authenticated:
+        return "Please login to access this page."
 
 @blueprint.route('/a/<int:experimentId>')
+@isAnnotator
 def index(experimentId):
 
     experiment = Experiment.query.filter_by(id=experimentId).first()
@@ -90,8 +87,6 @@ def getDefaultKey(keySet):
             return k
     return ''
 
-
-
 '''
     .. params:
         experimentId: id of the experiment
@@ -120,9 +115,8 @@ def _updateCurrentFileIndex(experimentId, currentFileIndex):
 
     annotatorInfo.current = currentFileIndex
     db.session.commit()
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -137,9 +131,9 @@ def updateCurrentFileIndex():
     currentFileIndex = request.form.get('currentFileIndex', None)
 
     _updateCurrentFileIndex(experimentId, int(currentFileIndex))
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
+
     return jsonify(response)
 
 
@@ -157,9 +151,9 @@ def deleteAnnotation():
                                     ).delete()
 
     db.session.commit()
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
+
     return jsonify(response)
 
 
@@ -173,29 +167,6 @@ def _getFileDetails():
     currentFile = _getFile(experimentId, int(currentFileIndex))
     return jsonify(currentFile)
 
-
-
-
-
-
-# @blueprint.route('/_getFile/<int:experimentId>/<int:fileIndex>', methods=['POST','GET'])
-# def getFile(experimentId, fileIndex):
-#     # experimentId = request.args.get('experimentId', None)
-#     # fileIndex = request.args.get('fileIndex', None)
-#
-#     import sys
-#     from rapidannotator import app
-#     app.logger.info("aaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-#     app.logger.info(experimentId, fileIndex)
-#
-#     experiment = Experiment.query.filter_by(id=experimentId).first()
-#     experiment.files.order_by(File.id)
-#     return "asd"
-#     from rapidannotator import app
-#     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-#
-#
-
 @blueprint.route('/uploads/<path:filename>')
 def download_file(filename):
     from rapidannotator import app
@@ -204,16 +175,12 @@ def download_file(filename):
 @blueprint.route('/_addAnnotationInfo', methods=['POST','GET'])
 def _addAnnotationInfo():
 
-    import sys
-    from rapidannotator import app
-
     for k in request.args:
         arguments = json.loads(k)
 
     fileId = arguments.get('fileId', None)
     annotations = arguments.get('annotations')
 
-    app.logger.info("keys")
     for annotationLevelId in annotations:
         labelId = annotations[annotationLevelId]
         annotationInfo = AnnotationInfo(
@@ -231,9 +198,8 @@ def _addAnnotationInfo():
 
     db.session.commit()
 
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -241,15 +207,10 @@ def _addAnnotationInfo():
 @blueprint.route('/_toggleLooping', methods=['POST','GET'])
 def _toggleLooping():
 
-    import sys
-    from rapidannotator import app
-
     current_user.looping = not current_user.looping
-
     db.session.commit()
 
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
