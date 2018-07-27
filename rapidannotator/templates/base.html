@@ -5,10 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <script type="text/javascript" src="{{ url_for('static', filename='js/plupload.full.min.js') }}"></script>
+    <!-- ONLINE -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- OFFLINE -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='offlineFiles/bootstrap.min.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='offlineFiles/jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='offlineFiles/jquery-ui.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='offlineFiles/bootstrap.min.js') }}"></script> -->
 
     <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap-confirmation2/dist/bootstrap-confirmation.min.js"></script> -->
 
@@ -65,11 +72,26 @@
         <li><a href="{{ url_for('home.index') }}">Rapid Annotator</a></li>
     </ul>
   </div>
+
   <div id="navbar1" class="navbar-collapse collapse">
-      {% if current_user.is_authenticated %}
+      {%- if current_user.is_authenticated -%}
           <ul class="nav navbar-nav">
               <li><a href="{{ url_for('home.index') }}">{{ ('Home') }}</a></li>
-              <li><a href="#">{{ ('My Profile') }}</a></li>
+              {%- if not current_user.is_experimenter() -%}
+                  <li class="askRightsButton hidden-element" value="experimenter" data-toggle="modal" data-target="#rightsModalId">
+                      <a href="#">{{ ('Ask for Experimenter Rights') }}</a>
+                  </li>
+              {%- endif -%}
+              {%- if not current_user.is_admin() -%}
+                  <li class="askRightsButton hidden-element" value="admin" data-toggle="modal" data-target="#rightsModalId">
+                      <a href="#">{{ ('Ask for Admin Rights') }}</a>
+                  </li>
+              {%- endif -%}
+              {%- if current_user.is_admin() -%}
+                  <li>
+                      <a href="{{ url_for('admin.index') }}">{{ ('Admin Panel') }}</a>
+                  </li>
+              {%- endif -%}
           </ul>
       {% endif %}
       <ul class="nav navbar-nav navbar-right">
@@ -92,29 +114,59 @@
 
 <body>
 
-    <!-- Logout Modal -->
-    <div class="modal fade" id="logoutModalId" role="dialog" tabindex="-1"
-        aria-labelledby="logoutModalId" aria-hidden="true">
-      <div class="modal-dialog modal-sm">
-        <!-- Modal content-->
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title">Are you sure you want to logout?</h4>
-          </div>
-            <div class="modal-body">
-                <form method="POST" name="logout_form" action = "{{ url_for('home.logout') }}">
-                    <div class="form-actions">
-                        <button type="submit" name="submit" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Log Out') }}</button>
-                        <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Close</button>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
+<!-- Logout-Modal -->
+<div class="modal fade" id="logoutModalId" role="dialog" tabindex="-1"
+    aria-labelledby="logoutModalId" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Are you sure you want to logout?</h4>
       </div>
+        <div class="modal-body">
+            <form method="POST" name="logout_form" action = "{{ url_for('home.logout') }}">
+                <div class="form-actions">
+                    <button type="submit" name="submit" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Log Out') }}</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        </div>
     </div>
+  </div>
+</div>
+
+<!-- Rights-Modal -->
+<div class="modal fade" id="rightsModalId" role="dialog" tabindex="-1"
+    aria-labelledby="rightsModalId" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Message for the admin</h4>
+      </div>
+        <div class="modal-body">
+            <form method="POST" id="rightsForm" name="rightsForm">
+
+                <input type="text" name="message" id="message" maxlength="640" minlength="0"
+                    class="form-control validate" placeholder="Anything that you want to tell the admin...">
+                <span class="help-block"><small>Should be precise and unambiguous. Max length : 640</small></span>
+
+                <div class="form-actions">
+                    <button type="submit" name="submit" class="btn btn-primary"><i class="fa fa-check"></i> {{ ('Submit') }}</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+    </div>
+  </div>
+</div>
+
 
     {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -145,7 +197,7 @@
         {% endwith %}
     </div> -->
 
-
+<!--
     <div class ="container-fluid">
         {%  with messages = get_flashed_messages() %}
         {% if messages %}
@@ -158,9 +210,66 @@
             {% endfor %}
         {% endif %}
         {% endwith %}
-    </div>
+    </div> -->
 
-    <div id="content">{% block page_body %}{% endblock page_body %}</div>
+    <div id="content">{% block page_body %}{% endblock page_body %}
+
+        <script charset="utf-8" type="text/javascript">
+            $(function() {
+
+                function checkRights() {
+                    var url = "{{ url_for('home.checkRights')}}";
+                    var data = {};
+
+                    $.getJSON(url , data, function(response) {
+                        if(response.success) {
+                            kk = response;
+                            if( !response.experimenterRequest ) {
+                                $(".askRightsButton[value='experimenter']").removeClass('hidden-element');
+                            }
+                            if( !response.adminRequest ) {
+                                $(".askRightsButton[value='admin']").removeClass('hidden-element');
+                            }
+                        }
+                    });
+                }
+
+                checkRights();
+                var askFor;
+
+                $('.askRightsButton').on('click', function() {
+                    askFor = $(this).attr('value');
+                })
+                var rightsForm = $('#rightsForm');
+
+                rightsForm.on('submit', function(e) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+
+                    var message = $(this).find("input[name='message']").val();
+                    var url = "{{ url_for('home.askRights')}}";
+                    var data = {
+                        'message' : message,
+                        'role' : askFor,
+                    };
+
+                    $.getJSON(url , data, function(response) {
+                        if(response.success) {
+                            $('#rightsModalId').modal('hide');
+                            $('#rightsForm').find('input').val("");
+                            $(".askRightsButton[value=" + askFor + "]").addClass('hidden-element');
+                            alert('request has been sent and would be soon reviewed by admins');
+                            // $(".askRightsButton[value=" + askFor + "]").hide();
+                        }
+                    });
+
+                })
+
+            });
+        </script>
+
+
+    </div>
     <!-- <div class="container fixed-footer">
         <a class="footer-copyright footer-items" href="#"><span class="glyphicon glyphicon-copyright-mark"></span> Red Hen Labs</a>
         <a class="footer-items" href="#"> About</a>
