@@ -20,6 +20,8 @@ ExperimentOwner = db.Table(
         'Experiment.id'))
 )
 
+''' TODO? no need to specify datatype in ForeignKeys '''
+
 """User data model."""
 class User(UserMixin, db.Model):
 
@@ -40,16 +42,22 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(300))
 
     """ There are 3 levels of user hierarchy,
-    userrole field in the User relation can be any one of
+     User can be any one / more
     ..  Annotator,
     ..  Experimenter,
     ..  Site_Admin
+    ..  by default everyone will be annotator
     """
-    userrole = db.Column(
-        db.Enum("annotator", 'experimenter', 'admin',
-        name='roleType'),
-        server_default="annotator",
-        nullable=False
+    experimenter = db.Column(
+        db.Boolean(name='experimenter'),
+        nullable=False,
+        server_default='0',
+    )
+
+    admin = db.Column(
+        db.Boolean(name='admin'),
+        nullable=False,
+        server_default='0',
     )
 
     """ Flag indicating whether the user has turned on the
@@ -60,6 +68,12 @@ class User(UserMixin, db.Model):
         nullable=False,
         server_default='1',
     )
+
+    def is_experimenter(self):
+        return self.experimenter
+
+    def is_admin(self):
+        return self.admin
 
     '''List of the experiments owns.'''
     my_experiments = db.relationship("Experiment", secondary=ExperimentOwner,
@@ -510,7 +524,7 @@ class AnnotationInfo(db.Model):
         return 'AnnotationInfo <id={0.id}, \
                 annotationLevel_id={0.annotationLevel_id}, \
                 user_id={0.user_id}, \
-                label_id={0.user_id}, \
+                label_id={0.label_id}, \
                 file_id={0.file_id}>'.format(self)
 
     def __repr__(self):
@@ -519,3 +533,69 @@ class AnnotationInfo(db.Model):
                 user_id={0.user_id}, \
                 label_id={0.label_id}, \
                 file_id={0.file_id}>'.format(self)
+
+
+"""
+    RightsRequest of users.
+"""
+class RightsRequest(db.Model):
+    __tablename__ = 'RightsRequest'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    ''' id of the user who made this request.'''
+    user_id = db.Column(Integer, db.ForeignKey(
+        'User.id', ondelete='CASCADE')
+    )
+
+    ''' username of the user who made this request.'''
+    username = db.Column(db.String(255), db.ForeignKey(
+        'User.username', ondelete='CASCADE')
+    )
+
+    """
+    ..  Each user has Annotator Rights in the beginning,
+        User can request to become any one of
+    ..  Experimenter,
+    ..  Site_Admin
+    """
+    role = db.Column(
+        db.Enum('experimenter', 'admin',
+        name='roleType'),
+        nullable=False
+    )
+
+    """ User's message for the site_admin. """
+    message = db.Column(db.String(640))
+
+
+    """The date and time when the request was made."""
+    requested_at = db.Column(db.DateTime, server_default=func.now())
+
+    """
+        Flag indicating whether the request has been approved or not.
+    """
+    approved = db.Column(
+        db.Boolean(name='approved'),
+        nullable=False,
+        server_default='0',
+    )
+
+    def __str__(self):
+        """Representation."""
+        return 'RightsRequest <id={0.id}, \
+                id={0.id}, \
+                user_id={0.user_id}, \
+                role={0.role}, \
+                requested_at={0.requested_at}, \
+                approved={0.approved}, \
+                message={0.message}>'.format(self)
+
+    def __repr__(self):
+        return 'RightsRequest <id={0.id}, \
+                id={0.id}, \
+                user_id={0.user_id}, \
+                role={0.role}, \
+                requested_at={0.requested_at}, \
+                approved={0.approved}, \
+                message={0.message}>'.format(self)
