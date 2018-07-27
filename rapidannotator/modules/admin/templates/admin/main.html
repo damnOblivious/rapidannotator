@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+{% from "macros.html" import render_field %}
+
+{% block title %} Admin {% endblock title %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+  </style>
+{% endblock head %}
+
+
+{% block admin_page %}
+
+<div class="container">
+    <table id="" class="table table-hover table-striped">
+        <thead>
+            <tr class="">
+                <th style="width: 5.0%">{{ ('Index') }}</th>
+                <th style="width: 20.0%">{{ ('User') }}</th>
+                <th style="width: 15.0%">{{ ('Role') }}</th>
+                <th style="width: 57.0%">{{ ('Message') }}</th>
+                <th style="width: 3.0%">{{ ('Status') }}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for req in requests | reverse %}
+                <tr class="" value={{req.id}}>
+                <td> {{ loop.index }} </td>
+                <td> {{ req.username }} </td>
+                <td> {{ req.role }} </td>
+                <td><p>{%- if req.message -%} {{ req.message }} {%- endif -%}</p></td>
+                <td>
+                <button value={{req.approved}} type="button"
+                    class="toggleRequest btn btn-primary btn-group btn-group-inline btn-space pull-right">
+                    {%- if req.approved -%} {{ ('Revoke') }} {%- else -%} {{ ('Approve') }} {%- endif -%}
+                </button>
+                </td>
+                </tr>
+            {% endfor %}
+
+    </tbody>
+</table>
+</div>
+
+<script type="text/javascript">
+    $(window).on('load',function(){
+
+        toggleRequest = $('.toggleRequest');
+
+        toggleRequest.on('click', function() {
+            var requestId = $(this).closest("tr").attr('value');
+            var url = "{{ url_for('admin.toggleRequest')}}";
+            var data = {
+                'requestId' : requestId,
+            };
+
+            $.getJSON(url, data, function(response) {
+                var approved = toggleRequest.val();
+                var newText = "";
+                if(approved == "True") {
+                    newText = "Approve";
+                    toggleRequest.val("False");
+                } else {
+                    newText = "Revoke";
+                    toggleRequest.val("True");
+                }
+                toggleRequest.text(newText);
+            });
+
+        });
+
+    });
+</script>
+
+{% endblock admin_page %}
