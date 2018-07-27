@@ -22,7 +22,8 @@ def index():
 @blueprint.route('/login', methods=['POST'])
 def login():
     if current_user.is_authenticated:
-        return "already logged in! :) :) "
+        return redirect(url_for('home.index'))
+
     loginForm = LoginForm()
     registrationForm = RegistrationForm()
 
@@ -45,7 +46,7 @@ def login():
 @blueprint.route('/register', methods=['POST'])
 def register():
     if current_user.is_authenticated:
-        return "already logged in! :) :) "
+        return redirect(url_for('home.index'))
     loginForm = LoginForm()
     registrationForm = RegistrationForm()
 
@@ -62,8 +63,8 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        flash(_('Thank you, you are now a registered user.'))
-        flash(_('Please Login to continue.'))
+        flash(_('Thank you, you are now a registered user. \
+                Please Login to continue.'))
 
         return render_template('frontpage/main.html',
             loginForm = loginForm,
