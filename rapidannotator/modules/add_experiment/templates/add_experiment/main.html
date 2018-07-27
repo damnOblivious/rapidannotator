@@ -30,7 +30,7 @@
             <span class="glyphicon glyphicon-cog"></span>
         </a>
 
-        {%- set addLablesUrl = url_for('add_experiment.editLables', experimentId = experiment.id) %}
+        {%- set addLablesUrl = url_for('add_experiment.editLabels', experimentId = experiment.id) %}
 
         <a id="addLableButtonId" href="{{ addLablesUrl }}" value="{{ addLablesUrl }}"
             class="btn btn-primary btn-group btn-group-inline btn-space">{{ ('Add Labels') }}</a>

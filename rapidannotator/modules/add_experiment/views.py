@@ -1,5 +1,5 @@
 from flask import render_template, flash, redirect, url_for, request, jsonify, \
-    current_app, g, abort, jsonify, session
+    current_app, g, abort, jsonify, session, send_file
 from flask_babelex import lazy_gettext as _
 from werkzeug.utils import secure_filename
 
@@ -17,7 +17,7 @@ from .api import isOwner
 from sqlalchemy import and_
 import os
 
-
+import xlwt
 
 @blueprint.before_request
 def before_request():
@@ -116,7 +116,7 @@ def _addAnnotator():
 
 @blueprint.route('/labels/<int:experimentId>')
 @isOwner
-def editLables(experimentId):
+def editLabels(experimentId):
 
     experiment = Experiment.query.filter_by(id=experimentId).first()
     annotation_levels = experiment.annotation_levels
@@ -159,7 +159,7 @@ def _addAnnotationLevel():
                 annotationLevel.level_number = annotationLevelForm.levelNumber.data
             experiment.annotation_levels.append(annotationLevel)
             db.session.commit()
-            return redirect(url_for('add_experiment.editLables', experimentId = experimentId))
+            return redirect(url_for('add_experiment.editLabels', experimentId = experimentId))
 
     errors = "annotationLevelErrors"
 
@@ -215,9 +215,8 @@ def _deleteLabel():
     Label.query.filter_by(id=labelId).delete()
 
     db.session.commit()
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -228,9 +227,8 @@ def _deleteAnnotationLevel():
     AnnotationLevel.query.filter_by(id=annotationId).delete()
 
     db.session.commit()
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -245,9 +243,8 @@ def _editAnnotationLevel():
     annotationLevel.level_number = request.args.get('annotationLevelNumber', None)
 
     db.session.commit()
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -261,9 +258,8 @@ def _editLabel():
     label.key_binding = request.args.get('labelKey', None)
 
     db.session.commit()
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -355,9 +351,8 @@ def _deleteFile():
 
     db.session.delete(currFile)
     db.session.commit()
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
     return jsonify(response)
 
 @blueprint.route('/_updateFileName', methods=['POST','GET'])
@@ -382,9 +377,8 @@ def _updateFileName():
     currentFile.name = updatedName
 
     db.session.commit()
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -398,9 +392,8 @@ def _updateFileCaption():
     currentFile.caption = request.args.get('caption', None)
 
     db.session.commit()
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -443,9 +436,8 @@ def _deleteAnnotator():
 
     db.session.commit()
 
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -466,9 +458,8 @@ def _editAnnotator():
     annotatorDetails.end = request.args.get('end', annotatorDetails.end)
 
     db.session.commit()
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -483,9 +474,8 @@ def _deleteOwner():
 
     db.session.commit()
 
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -508,9 +498,8 @@ def _deleteExperiment():
         shutil.rmtree(experimentDir)
 
 
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -519,11 +508,9 @@ def _deleteExperiment():
 @isOwner
 def viewResults(experimentId):
 
-    users = User.query.all()
     experiment = Experiment.query.filter_by(id=experimentId).first()
-    totalFiles = experiment.files.count()
     annotations = {}
-    
+
     for f in experiment.files:
         annotation = {}
         fileAnnotations = AnnotationInfo.query.filter_by(file_id=f.id).all()
@@ -538,9 +525,7 @@ def viewResults(experimentId):
         annotations[f.id] = annotation
 
     return render_template('add_experiment/results.html',
-        users = users,
         experiment = experiment,
-        totalFiles = totalFiles,
         annotations = annotations,
     )
 
@@ -564,8 +549,62 @@ def _discardAnnotations():
         annotatorInfo.current = annotatorInfo.start
 
     db.session.commit()
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
+
+@blueprint.route('/_exportResults/<int:experimentId>', methods=['POST','GET'])
+def _exportResults(experimentId):
+
+    # experimentId = request.args.get('experimentId', None)
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+
+    excel_file = xlwt.Workbook()
+    sheet = excel_file.add_sheet('results')
+    sheet.col(0).width = 256 * 40
+    row, col = 0, 0
+    allLables = {}
+
+    annotationLevels = AnnotationLevel.query.filter_by(experiment_id=\
+                        experimentId).order_by(AnnotationLevel.level_number)
+
+    for level in annotationLevels:
+        labels = Label.query.filter_by(annotation_id=level.id).order_by(Label.id)
+        for label in labels:
+            allLables[label.id] = 0
+            col += 1
+            sheet.write(row, col, label.name)
+
+    row, col = 0, 0
+    for f in experiment.files:
+        row += 1
+        sheet.write(row, 0, f.name)
+        annotation = {}
+        for key in allLables:
+            allLables[key] = 0
+
+        fileAnnotations = AnnotationInfo.query.filter_by(file_id=f.id).all()
+        for fileAnnotation in fileAnnotations:
+            labelId = fileAnnotation.label_id
+            allLables[labelId] += 1
+
+        col = 1
+        for key in allLables:
+            sheet.write(row, col, allLables[key])
+            col += 1
+            allLables[key] = 0
+
+    filename = str(experimentId) + '.xls'
+
+    from rapidannotator import app
+    filePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    excel_file.save(filePath)
+
+    # when to remove file?
+    # os.remove(filePath)
+
+    response = {}
+    response['success'] = True
+
+    return send_file(filePath, as_attachment=True)

@@ -28,6 +28,15 @@
             {{ ('Discard All Annotations') }}
             <span class="glyphicon glyphicon-trash"></span>
         </a>
+        {%- set exportResultsUrl = url_for('add_experiment._exportResults', experimentId = experiment.id) %}
+
+        <a class="exportResults btn btn-primary btn-group btn-group-inline btn-space"
+            href="{{exportResultsUrl}}">
+
+            {{ ('Export Results to Sheet') }}
+            <span class="glyphicon glyphicon-download-alt"></span>
+        </a>
+
     </div>
 
 
@@ -105,6 +114,7 @@
 
 <script charset="utf-8" type="text/javascript">
     $(function() {
+
         discardAnnotationsForm = $('#discardAnnotationsForm');
 
         discardAnnotationsForm.on('submit', function(e) {
