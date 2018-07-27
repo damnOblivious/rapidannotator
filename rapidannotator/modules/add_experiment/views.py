@@ -12,25 +12,25 @@ from rapidannotator import bcrypt
 
 from flask_login import current_user, login_required
 from flask_login import login_user, logout_user, current_user
+from .api import isOwner
 
 from sqlalchemy import and_
-
-
 import os
 
-'''
-@blueprint.before_request
-def before_request():
-    if not current_user.is_authenticated:
-        return current_app.login_manager.unauthorized()
-'''
+
 
 @blueprint.before_request
-@login_required
 def before_request():
-    pass
+    if current_app.login_manager._login_disabled:
+        pass
+    elif not current_user.is_authenticated:
+        return "Please login to access this page."
+    elif not current_user.is_experimenter():
+        return "You are not an experimenter, hence allowed to access this page."
+
 
 @blueprint.route('/a/<int:experimentId>')
+@isOwner
 def index(experimentId):
     users = User.query.all()
     experiment = Experiment.query.filter_by(id=experimentId).first()
@@ -61,17 +61,14 @@ def _addDisplayTimeDetails():
     afterTime = request.args.get('afterTime', None)
     experimentId = request.args.get('experimentId', None)
 
-    '''do in try catch'''
     experiment = Experiment.query.filter_by(id=experimentId).first()
     experiment.display_time = DisplayTime(
         before_time = beforeTime,
         after_time = afterTime,
     )
-    '''end try catch'''
     db.session.commit()
-    response = {
-        'success' : True,
-    }
+    response = {}
+    response['success'] = True
 
     return jsonify(response)
 
@@ -82,12 +79,10 @@ def _addOwner():
     username = request.args.get('userName', None)
     experimentId = request.args.get('experimentId', None)
 
-    '''do in try catch'''
     experiment = Experiment.query.filter_by(id=experimentId).first()
     user = User.query.filter_by(username=username).first()
     experiment.owners.append(user)
     db.session.commit()
-    '''end try catch'''
     response = {
         'success' : True,
         'ownerId' : user.id,
@@ -102,7 +97,6 @@ def _addAnnotator():
     username = request.args.get('userName', None)
     experimentId = request.args.get('experimentId', None)
 
-    '''do in try catch'''
     experiment = Experiment.query.filter_by(id=experimentId).first()
     user = User.query.filter_by(username=username).first()
 
@@ -110,9 +104,6 @@ def _addAnnotator():
     experimentAnnotator.experiment = experiment
     experimentAnnotator.annotator = user
     db.session.commit()
-
-
-    '''end try catch'''
 
     response = {
         'success' : True,
@@ -124,6 +115,7 @@ def _addAnnotator():
 
 
 @blueprint.route('/labels/<int:experimentId>')
+@isOwner
 def editLables(experimentId):
 
     experiment = Experiment.query.filter_by(id=experimentId).first()
@@ -413,6 +405,7 @@ def _updateFileCaption():
     return jsonify(response)
 
 @blueprint.route('/viewSettings/<int:experimentId>')
+@isOwner
 def viewSettings(experimentId):
 
     users = User.query.all()
@@ -523,6 +516,7 @@ def _deleteExperiment():
 
 
 @blueprint.route('/viewResults/<int:experimentId>')
+@isOwner
 def viewResults(experimentId):
 
     users = User.query.all()

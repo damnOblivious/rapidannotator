@@ -58,7 +58,8 @@
                 </ul>
             </div>
 
-            <button type="button" class="btn btn-success btn-group btn-group-inline btn-space">Done</button>
+            <a href="{{ url_for('home.index') }}"
+             type="button" class="btn btn-success btn-group btn-group-inline btn-space">{{ ('Done') }}</a>
 
         </div>
 
@@ -89,12 +90,6 @@
 
 </div>
 
-<!-- <div class="container">
-    <div id="filelist" class="container">
-    </div>
-</div>
- -->
-
 <div class ="errorLog hidden-element alert alert-dismissible fixed alert-warning">
     <div class ="container" role="alert">
         <button type="button" class="close" aria-label="Close">
@@ -115,10 +110,8 @@
         </thead>
 
         <tbody>
-            <!-- {{experiment.files}} -->
 
             {% for file in experiment.files | reverse %}
-                {%- set experiment_url = url_for('view_experiment.index', experimentId = experiment.id) %}
                 <tr class="" value={{file.id}} data-href="">
                 <td>
                     <img class="displayImages" src="{{url_for('static', filename = 'img/videoIcon.png')}}" alt="Red Hen Logo">
