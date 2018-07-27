@@ -41,3 +41,6 @@ app.register_blueprint(view_experiment, url_prefix='/view_experiment')
 
 from rapidannotator.modules.annotate_experiment import blueprint as annotate_experiment
 app.register_blueprint(annotate_experiment, url_prefix='/annotate_experiment')
+
+from rapidannotator.modules.admin import blueprint as admin
+app.register_blueprint(admin, url_prefix='/admin')

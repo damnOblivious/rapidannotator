@@ -10,4 +10,5 @@ class DevelopmentConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = 'mysql://tissues:12345@localhost/testing'
     SQLALCHEMY_ECHO = True
     SECRET_KEY = "sldjfhals13 2hhdwflkjdhfa"
+    LOGIN_DISABLED = False
     UPLOAD_FOLDER = '/home/tissues/interests/lal/data/uploads'
