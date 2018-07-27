@@ -342,7 +342,7 @@ $(function() {
 
     closeErrorButton.on('click', function() {
             $(".errorLog").find(".container").find("strong").text("");
-            $(".hidden-element").hide();
+            $(".errorLog").addClass('hidden-element');
         });
 
     function addFileToTable(file) {
@@ -464,7 +464,6 @@ $(function() {
             BeforeUpload: function (up, file) {
                 var fileCaption = $('#fileTable tbody tr[value=' + file.id + '] .fileCaption p').text();
                 var fileName = $('#fileTable tbody tr[value=' + file.id + '] .fileName p').text();
-                console.log("filenme yeh hai ",fileName);
                 if( fileCaption != 'No caption provided' && fileCaption != '') {
                     up.setOption('multipart_params', {fileCaption : fileCaption});
                 }
@@ -510,9 +509,9 @@ $(function() {
             },
 
             Error: function(up, err) {
-                asdf = err;
+                asdf = $(".errorLog").find(".container").find("strong");
                 $(".errorLog").find(".container").find("strong").append("Error ### " + err.file.name + " : " + err.code + " : " + err.message + "<br/>");
-                $(".hidden-element").show();
+                $(".errorLog").removeClass('hidden-element');
             }
         }
     });

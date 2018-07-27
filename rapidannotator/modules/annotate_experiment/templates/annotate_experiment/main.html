@@ -190,7 +190,7 @@
         preLoadFiles();
 
         /*show only first level*/
-        $(".annotationLevel[data-index=1]").show();
+        $(".annotationLevel[data-index=1]").removeClass('hidden-element');
 
         labelButton.on('click', function() {
             selectedLabel = $(this).data("labelid");
@@ -216,18 +216,18 @@
             currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
             levelId = currentLevelBody.data("levelid");
             annotations[levelId] = label;
-            currentLevelBody.hide();
+            currentLevelBody.addClass('hidden-element');
             if (currentLevel == totalAnnotationLevels) {
                 fileAnnotationCompleted();
             }
             currentLevel = (currentLevel % totalAnnotationLevels) + 1;
             currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
-            currentLevelBody.show();
+            currentLevelBody.removeClass('hidden-element');
         }
 
         function previousLevel() {
             currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
-            currentLevelBody.hide();
+            currentLevelBody.addClass('hidden-element');
             if (currentLevel == 1) {
                 loadPreviousFile();
                 currentLevel = 1;
@@ -235,7 +235,7 @@
                 currentLevel = currentLevel - 1;
             }
             currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
-            currentLevelBody.show();
+            currentLevelBody.removeClass('hidden-element');
         }
 
         undoButton.on('click', function() {
@@ -251,8 +251,8 @@
         }
 
         function displayEnd() {
-            $('.annotationArea').hide();
-            $('.thanksNote').show();
+            $('.annotationArea').addClass('hidden-element');
+            $('.thanksNote').removeClass('hidden-element');
         }
 
         function loadPreviousFile() {
@@ -284,7 +284,7 @@
                     type: "PUT",
                     data : data,
                     success: function(response) {
-                        $(".file[data-index='" + currentLoadedFile + "']").hide();
+                        $(".file[data-index='" + currentLoadedFile + "']").addClass('hidden-element');
                         currentLoadedFile = 0;
                         preLoadedTill = 0;
                         newFile(0, currentFileIndex, true);
@@ -317,7 +317,7 @@
                         }
                     } else {
                         currentFileIndex += 1;
-                        $(".file[data-index='" + currentLoadedFile + "']").hide();
+                        $(".file[data-index='" + currentLoadedFile + "']").addClass('hidden-element');
                         currentLoadedFile = (currentLoadedFile + 1) % preLoadLimit;
                         preLoadFiles();
                         showCurrentFile(currentLoadedFile);
@@ -343,7 +343,7 @@
 
         function showCurrentFile(divIndex) {
             loadedFile = $(".file[data-index='" + divIndex + "']");
-            loadedFile.show();
+            loadedFile.removeClass('hidden-element');
 
             if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
                 clip = loadedFile.find("{{ experiment.category }}");
