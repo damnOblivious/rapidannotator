@@ -120,6 +120,7 @@
 <script type="text/javascript">
     $(window).on('load', function() {
 
+        var undoButton = $('.undoButton');
         if({{currentFileIndex}} > {{lastFile}}) {
             displayEnd();
             return;
@@ -159,7 +160,6 @@
         /*level indexing is 1 based*/
         var currentLevel = 1;
         var labelButton = $('.labelButton');
-        var undoButton = $('.undoButton');
         var selectedLabel = -1;
         var annotations = {};
         var totalAnnotationLevels = {{ totalAnnotationLevels }};
@@ -226,16 +226,15 @@
         }
 
         function previousLevel() {
-            currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
-            currentLevelBody.addClass('hidden-element');
             if (currentLevel == 1) {
                 loadPreviousFile();
-                currentLevel = 1;
             } else {
+                currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
+                currentLevelBody.addClass('hidden-element');
                 currentLevel = currentLevel - 1;
+                currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
+                currentLevelBody.removeClass('hidden-element');
             }
-            currentLevelBody = $(".annotationLevel[data-index='" + currentLevel +"']");
-            currentLevelBody.removeClass('hidden-element');
         }
 
         undoButton.on('click', function() {
@@ -253,6 +252,7 @@
         function displayEnd() {
             $('.annotationArea').addClass('hidden-element');
             $('.thanksNote').removeClass('hidden-element');
+            undoButton.addClass('hidden-element');
         }
 
         function loadPreviousFile() {

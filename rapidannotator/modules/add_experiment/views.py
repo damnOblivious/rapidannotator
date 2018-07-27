@@ -522,7 +522,8 @@ def viewResults(experimentId):
     users = User.query.all()
     experiment = Experiment.query.filter_by(id=experimentId).first()
     totalFiles = experiment.files.count()
-
+    annotations = {}
+    
     for f in experiment.files:
         annotation = {}
         fileAnnotations = AnnotationInfo.query.filter_by(file_id=f.id).all()
