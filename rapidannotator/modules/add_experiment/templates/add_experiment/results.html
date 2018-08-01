@@ -44,14 +44,17 @@
 </div>
 
 <div class="container">
+    {% set levelCount = experiment.annotation_levels | count %}
+
+
+    {%- if levelCount != 0 -%}
     <div>
         <table class="table table-hover table-striped">
             <thead>
                 <tr>
                     <th style="width: 10%"> {{( 'File' )}} </th>
-                    {% set levelCount = experiment.annotation_levels | count %}
-                    {% set width = 90 / levelCount %}
 
+                    {% set width = 90 / levelCount %}
                     {% for level in experiment.annotation_levels %}
                         <th style="width: {{ width }}%">{{ level.name }}</th>
                     {% endfor %}
@@ -86,6 +89,11 @@
             </tbody>
         </table>
     </div>
+    {%- else -%}
+    <div>
+        <h3> You haven't added any annotation levels to the experiment yet. </h3>
+    </div>
+    {%- endif -%}
 </div>
 
 <!-- Delete-Annotations-Modal -->
