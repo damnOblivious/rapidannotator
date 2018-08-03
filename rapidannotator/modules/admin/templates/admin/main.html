@@ -27,7 +27,7 @@
         <tbody>
 
             {% for req in requests | reverse %}
-                <tr class="" value={{req.id}}>
+                <tr class="" value="{{req.id}}">
                 <td> {{ loop.index }} </td>
                 <td> {{ req.username }} </td>
                 <td> {{ req.role }} </td>
@@ -48,26 +48,28 @@
 <script type="text/javascript">
     $(window).on('load',function(){
 
-        toggleRequest = $('.toggleRequest');
+        var toggleRequest = $('.toggleRequest');
 
         toggleRequest.on('click', function() {
             var requestId = $(this).closest("tr").attr('value');
+            var currentRequest = $(this).closest("tr").find('.toggleRequest');
             var url = "{{ url_for('admin.toggleRequest')}}";
             var data = {
                 'requestId' : requestId,
             };
 
             $.getJSON(url, data, function(response) {
-                var approved = toggleRequest.val();
+
+                var approved = currentRequest.val();
                 var newText = "";
                 if(approved == "True") {
                     newText = "Approve";
-                    toggleRequest.val("False");
+                    currentRequest.val("False");
                 } else {
                     newText = "Revoke";
-                    toggleRequest.val("True");
+                    currentRequest.val("True");
                 }
-                toggleRequest.text(newText);
+                currentRequest.text(newText);
             });
 
         });
