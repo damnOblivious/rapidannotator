@@ -40,7 +40,7 @@
             <span class="caret"></span></button>
             <ul class="dropdown-menu scrollable-dropdown" id="addOwnersMenu" role="menu" aria-labelledby="addOwners">
                 {% for user in notOwners %}
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{user.fullname}}</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span>{{user.fullname}}</span></a></li>
                 {% endfor %}
             </ul>
         </div>
@@ -51,7 +51,7 @@
                 <span class="caret"></span></button>
                 <ul class="dropdown-menu scrollable-dropdown" id="addAnnotatorsMenu" role="menu" aria-labelledby="addAnnotators">
                     {% for user in notAnnotators %}
-                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{user.fullname}}</a></li>
+                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#"><span>{{user.fullname}}</span></a></li>
                     {% endfor %}
                 </ul>
             </div>
@@ -81,9 +81,9 @@
                 <h3>Annotators</h3>
                 <div class="list-group col-6" id="annotators">
                     {% for obj in annotatorDetails %}
-                        <a class="list-group-item annotator" value={{ obj.annotator.id }}
+                        <a value="{{ obj.annotator.id }}" class="list-group-item annotator"
                             data-start={{ obj.start }} data-end={{ obj.end }}>
-                            {{ obj.annotator.fullname }}
+                            <span>{{ obj.annotator.fullname }}</span>
                             <span class="deleteAnnotatorButton pull-right glyphicon glyphicon-trash btn-space"
                                 data-toggle="modal" data-target="#deleteAnnotatorModal"></span>
                             <span class="editAnnotatorButton pull-right glyphicon glyphicon-cog btn-space"
@@ -96,8 +96,8 @@
                 <h3>Owners</h3>
                 <div class="list-group col-6" id="owners">
                     {% for user in owners %}
-                        <a class="list-group-item owner" value={{ user.id }}>
-                            {{ user.fullname }}
+                        <a class="list-group-item owner" value="{{ user.id }}">
+                            <span>{{ user.fullname }}</span>
                             <span class="deleteOwnerButton pull-right glyphicon glyphicon-trash btn-space"
                                 data-toggle="modal" data-target="#deleteOwnerModal"></span>
                         </a>
@@ -286,7 +286,6 @@
 
             $.getJSON(url , data, function(response) {
                 if(response.success) {
-                    console.log(response);
                     window.location.replace("{{url_for('home.index')}}");
                 } else {
                 }
@@ -305,7 +304,6 @@
             /* (TODO) break into functions */
             $.getJSON(url , data, function(response) {
                 if(response.success) {
-                    console.log(response);
                     $('#deleteOwnerModal').modal('hide');
 
                     var liAttributeDict = {
@@ -313,14 +311,20 @@
                     };
                     var liToAdd = $("<li/>", liAttributeDict);
 
-                    var name = $('#owners').find('a[value=' + currentOwner + ']').text();
+                    var name = $('#owners').find('a[value=' + currentOwner + ']').find('span').text();
+
+                    var nameSpan = $("<span/>", {
+                        "text" :           name,
+                    });
+
                     var aAttributeDict = {
                         "role" :           "menuitem",
                         "tabindex" :       "-1",
                         "href" :           "#",
-                        "text" :           name,
                     };
                     var aToAdd = $("<a/>", aAttributeDict);
+
+                    nameSpan.appendTo(aToAdd);
                     aToAdd.appendTo(liToAdd);
                     liToAdd.appendTo('#addOwnersMenu');
                     $('#owners').find('a[value=' + currentOwner + ']').remove();
@@ -388,7 +392,6 @@
 
             $.getJSON(url , data, function(response) {
                 if(response.success) {
-                    console.log(response);
                     $('#deleteAnnotatorModal').modal('hide');
 
                     var liAttributeDict = {
@@ -396,14 +399,19 @@
                     };
                     var liToAdd = $("<li/>", liAttributeDict);
 
-                    var name = $('#annotators').find('a[value=' + currentAnnotator + ']').text();
+                    var name = $('#annotators').find('a[value=' + currentAnnotator + ']').find('span').text();
+
+                    var nameSpan = $("<span/>", {
+                        "text" :           name,
+                    });
+
                     var aAttributeDict = {
                         "role" :           "menuitem",
                         "tabindex" :       "-1",
                         "href" :           "#",
-                        "text" :           name,
                     };
                     var aToAdd = $("<a/>", aAttributeDict);
+                    nameSpan.appendTo(aToAdd);
                     aToAdd.appendTo(liToAdd);
                     liToAdd.appendTo('#addAnnotatorsMenu');
                     $('#annotators').find('a[value=' + currentAnnotator + ']').remove();
@@ -445,7 +453,6 @@
 
             $.getJSON(url , data, function(response) {
                 if(response.success) {
-                    console.log(response);
                     $('#displayTimeModalId').modal('hide');
                 }
                 else {
@@ -456,7 +463,8 @@
 
         $("body").on("click", selectedOwner, function() {
             var currentSelected = $(this);
-            var userName = currentSelected.text();
+            xyz = this;
+            var userName = currentSelected.find('span').text();
             var url = "{{ url_for('add_experiment._addOwner')}}";
             var data = {
                 'userName' : userName,
@@ -475,9 +483,10 @@
         });
 
         $("body").on("click", selectedAnnotator, function() {
-            console.log("sdfasdfsdfsd :p");
             var currentSelected = $(this);
-            var userName = currentSelected.text();
+            xyz = this;
+
+            var userName = currentSelected.find('span').text();
             var url = "{{ url_for('add_experiment._addAnnotator')}}";
             var data = {
                 'userName' : userName,
@@ -497,6 +506,10 @@
 
         function addOwnerToList(id, name) {
 
+            var nameSpan = $("<span/>", {
+                "text" :           name,
+            });
+
             var trashIconSpan = $("<span/>", {
                 "class":        "deleteOwnerButton pull-right glyphicon glyphicon-trash btn-space",
                 "data-toggle":  "modal",
@@ -506,15 +519,20 @@
             var aAttributeDict = {
                 "class" :          "list-group-item owner",
                 "value" :           id,
-                "text" :           name,
             };
+
             var aToAdd = $("<a/>", aAttributeDict);
+            nameSpan.appendTo(aToAdd);
             trashIconSpan.appendTo(aToAdd);
             aToAdd.appendTo('#owners');
         }
 
 
         function addAnnotatorToList(id, name) {
+
+            var nameSpan = $("<span/>", {
+                "text" :           name,
+            });
 
             var trashIconSpan = $("<span/>", {
                 "class":        "deleteAnnotatorButton pull-right glyphicon glyphicon-trash btn-space",
@@ -531,11 +549,12 @@
             var aAttributeDict = {
                 "class" :          "list-group-item annotator",
                 "value" :           id,
-                "text" :           name,
                 "data-start" :      0,
                 "data-end" :      {{ totalFiles }},
             };
+
             var aToAdd = $("<a/>", aAttributeDict);
+            nameSpan.appendTo(aToAdd);
             trashIconSpan.appendTo(aToAdd);
             editIconSpan.appendTo(aToAdd);
             aToAdd.appendTo('#annotators');
