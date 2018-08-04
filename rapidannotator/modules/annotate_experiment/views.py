@@ -56,7 +56,8 @@ def index(experimentId):
     )
 
 def makeKeyBindingDict(experimentId):
-    levels = AnnotationLevel.query.filter_by(experiment_id=experimentId).order_by(AnnotationLevel.level_number)
+    levels = AnnotationLevel.query.filter_by(experiment_id=\
+                experimentId).order_by(AnnotationLevel.level_number)
     index, keyBindingDict = 1, {}
 
     for level in levels:
@@ -167,6 +168,7 @@ def _getFileDetails():
     currentFile = _getFile(experimentId, int(currentFileIndex))
     return jsonify(currentFile)
 
+''' (TODO) correct names '''
 @blueprint.route('/uploads/<path:filename>')
 def download_file(filename):
     from rapidannotator import app

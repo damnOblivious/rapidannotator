@@ -45,19 +45,31 @@
 
         {% for i in range(5) %}
         <div class="file col-xs-5 hidden-element" data-index={{loop.index0}} data-fileid=1>
-            {%- if experiment.category == 'image' -%}
-                <img class="annotationWindow" src="" alt="">
-            {%- elif experiment.category == 'video' -%}
-                <video width="400" controls>
+            {%- if experiment.category == 'video' -%}
+                {%- if experiment.uploadType == 'viaSpreadsheet' -%}
+                <iframe class="clip" src="">
+                  <p>Your browser does not support iframes.</p>
+                </iframe>
+                {%- else -%}
+                <video class="clip" width="400" controls>
                     <source src="" type="video/mp4">
                     Your browser does not support HTML5 video.
                 </video>
+                {%- endif -%}
             {%- elif experiment.category == 'audio' -%}
+                {%- if experiment.uploadType == 'viaSpreadsheet' -%}
+                <iframe class="clip" src="">
+                  <p>Your browser does not support iframes.</p>
+                </iframe>
                 <img class="audioAnnotationWindow" src="{{url_for('static', filename = 'img/audioIcon.jpeg')}}" alt="audio">
-                <audio width="400" controls muted="">
+                {%- else -%}
+                <audio class="clip" width="400" controls muted="">
                     <source src="" type="audio/mp3">
                     Your browser does not support HTML5 audio.
                 </audio>
+                {%- endif -%}
+            {%- elif experiment.category == 'image' -%}
+                <img class="annotationWindow" src="" alt="">
             {%- elif experiment.category == 'text' -%}
                 <pre>
                 </pre>
@@ -136,7 +148,7 @@
             $.getJSON(url, data, function(response) {
                 var looping = loopingButton.val();
                 var newText = "";
-                var clip = ("{{experiment.category}}" === "video") ? file.find('video') : file.find('audio');
+                var clip = file.find('.clip');
                 if(looping == "True") {
                     newText = "Turn on looping";
                     loopingButton.val("False");
@@ -313,7 +325,7 @@
                         currentLevel = -1;
                         if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
                             var f = $(".file[data-index='" + currentLoadedFile + "']");
-                            f.find("{{ experiment.category }}")[0].pause();
+                            f.find(".clip")[0].pause();
                         }
                     } else {
                         currentFileIndex += 1;
@@ -346,7 +358,8 @@
             loadedFile.removeClass('hidden-element');
 
             if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
-                clip = loadedFile.find("{{ experiment.category }}");
+                clip = loadedFile.find('.clip');
+                boo = clip;
                 var looping = loopingButton.val();
                 if (looping == "True") {
                     clip.attr('loop','loop');
@@ -368,22 +381,26 @@
 
         function updateFile(index, fileToLoad) {
             /*  since jquery variables can't be passed to jinja
-            hence we have to use this hard coded url to
-            keep dynamic filename
+                hence we have to use this hard coded url to
+                keep dynamic filename
             */
 
             var loadedDiv = $(".file[data-index='" + index + "']");
 
-            var url = "/annotate_experiment/uploads/" + {{experiment.id}} + "/" + fileToLoad.content;
+            if( "{{ experiment.uploadType }}" === "viaSpreadsheet" )
+                var url = fileToLoad.content;
+            else
+                var url = "/annotate_experiment/uploads/" + {{experiment.id}} + "/" + fileToLoad.content;
 
             if( "{{ experiment.category }}" === "image") {
                 loadedDiv.find('img').attr('src', url);
                 loadedDiv.find('img').attr('alt', caption);
             } else if( "{{ experiment.category }}" === "video") {
-                video = loadedDiv.find('video');
+                var video = loadedDiv.find('.clip');
                 video.attr('src', url);
+                video.origin = 'anonymous';
             } else if( "{{ experiment.category }}" === "audio") {
-                audio = loadedDiv.find('audio');
+                var audio = loadedDiv.find('clip');
                 audio.attr('src', url);
             } else if( "{{ experiment.category }}" === "text") {
                 loadedDiv.find('pre').text(fileToLoad.content);
