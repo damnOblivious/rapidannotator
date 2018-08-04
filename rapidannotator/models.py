@@ -42,7 +42,7 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(300))
 
     """ There are 3 levels of user hierarchy,
-     User can be any one / more
+     User can be any one / more of
     ..  Annotator,
     ..  Experimenter,
     ..  Site_Admin
@@ -51,13 +51,13 @@ class User(UserMixin, db.Model):
     experimenter = db.Column(
         db.Boolean(name='experimenter'),
         nullable=False,
-        server_default='0',
+        server_default='1',
     )
 
     admin = db.Column(
         db.Boolean(name='admin'),
         nullable=False,
-        server_default='0',
+        server_default='1',
     )
 
     """ Flag indicating whether the user has turned on the
@@ -171,6 +171,17 @@ class Experiment(db.Model):
         db.Enum('audio', 'video', 'image', 'text',
         name='category'),
         nullable=False
+    )
+
+    """ Experiments can have files uploaded via one of the 2 types
+    ..  manual : Manually,
+    ..  viaSpreadsheet,
+    """
+    uploadType = db.Column(
+        db.Enum('manual', 'viaSpreadsheet',
+        name='uploadType'),
+        nullable=False,
+        server_default='manual',
     )
 
     """ Experiments can have one of the 2 types of status

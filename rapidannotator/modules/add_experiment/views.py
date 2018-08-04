@@ -17,7 +17,7 @@ from .api import isOwner
 from sqlalchemy import and_
 import os
 
-import xlwt
+import xlwt, xlrd
 
 @blueprint.before_request
 def before_request():
@@ -281,44 +281,84 @@ def _uploadFiles():
         if flaskFile:
             experimentId = request.form.get('experimentId', None)
             experiment = Experiment.query.filter_by(id=experimentId).first()
-            filename = secure_filename(request.form.get('fileName', None))
-            newFile = File(name=filename)
-            experiment.files.append(newFile)
-            fileCaption = request.form.get('fileCaption', None)
-            newFile.caption = fileCaption
-
-            if experiment.category == 'text':
-                flaskFile.seek(0)
-                fileContents = flaskFile.read()
-                newFile.content = fileContents
+            if experiment.uploadType == 'viaSpreadsheet':
+                addFilesViaSpreadsheet(experimentId, flaskFile)
             else:
-                '''
-                    check if the directory for this experiment
-                    ..  already exists
-                    ..  if not then create
-                '''
-                experimentDir = os.path.join(app.config['UPLOAD_FOLDER'],
-                                        str(experimentId))
-                if not os.path.exists(experimentDir):
-                    os.makedirs(experimentDir)
+                filename = secure_filename(request.form.get('fileName', None))
+                newFile = File(name=filename)
+                experiment.files.append(newFile)
+                fileCaption = request.form.get('fileCaption', None)
+                newFile.caption = fileCaption
 
-                filePath = os.path.join(experimentDir, filename)
-                flaskFile.save(filePath)
-                newFile.content = filename
+                if experiment.category == 'text':
+                    flaskFile.seek(0)
+                    fileContents = flaskFile.read()
+                    newFile.content = fileContents
+                else:
+                    '''
+                        check if the directory for this experiment
+                        ..  already exists
+                        ..  if not then create
+                    '''
+                    experimentDir = os.path.join(app.config['UPLOAD_FOLDER'],
+                                            str(experimentId))
+                    if not os.path.exists(experimentDir):
+                        os.makedirs(experimentDir)
+
+                    filePath = os.path.join(experimentDir, filename)
+                    flaskFile.save(filePath)
+                    newFile.content = filename
 
 
-            db.session.commit()
+                db.session.commit()
 
-            response = {
-                'success' : True,
-                'fileId' : newFile.id,
-            }
+                response = {
+                    'success' : True,
+                    'fileId' : newFile.id,
+                }
 
-            return jsonify(response)
+                return jsonify(response)
 
     response = "success"
 
     return jsonify(response)
+
+def addFilesViaSpreadsheet(experimentId, spreadsheet):
+    experiment = Experiment.query.filter_by(id=experimentId).first()
+
+    from rapidannotator import app
+    filename = 'temp.xls'
+    filePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    spreadsheet.save(filePath)
+
+    book = xlrd.open_workbook(filePath)
+    first_sheet = book.sheet_by_index(0)
+    for i in range(first_sheet.nrows):
+        name = first_sheet.cell(i, 0).value
+        content = first_sheet.cell(i, 1).value
+        caption = first_sheet.cell(i, 2).value
+        newFile = File(name=name,
+                    content=content,
+                    caption=caption,
+                    experiment_id=experimentId,
+        )
+        experiment.files.append(newFile)
+    db.session.commit()
+    os.remove(filePath)
+
+
+'''
+    # print number of sheets
+    book.nsheets
+
+    # print sheet names
+    book.sheet_names()
+    # read a row slice
+    print first_sheet.row_slice(rowx=0,
+                                start_colx=0,
+                                end_colx=2)
+'''
+
 
 @blueprint.route('/_deleteFile', methods=['POST','GET'])
 def _deleteFile():
@@ -332,7 +372,7 @@ def _deleteFile():
 
     currFile = File.query.filter_by(id=fileId).first()
 
-    if experimentCategory != 'text':
+    if experiment.uploadType == 'manual' and experiment.category != 'text':
         '''
             check if the directory for this experiment
             ..  already exists
@@ -366,7 +406,7 @@ def _updateFileName():
 
     updatedName = secure_filename(request.args.get('name', currentFile.name))
 
-    if experiment.category != 'text':
+    if experiment.uploadType == 'manual' and experiment.category != 'text':
         experimentDir = os.path.join(app.config['UPLOAD_FOLDER'],
                                     str(currentFile.experiment_id))
 

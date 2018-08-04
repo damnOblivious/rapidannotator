@@ -11,9 +11,10 @@
 
 {% block experiment_body %}
 
-<div class="container">
+<!-- <div class="container">
     <h5><a>Home</a> > <a>Add Experiments</a></h5>
 </div>
+ -->
 
 <div class="container">
 
@@ -67,6 +68,7 @@
 
 </div>
 
+{%- if experiment.uploadType == 'manual' -%}
 <div class="container">
     <div>
         <div style="display: inline-block">
@@ -89,6 +91,30 @@
     <div id="filelist">Your browser doesn't have Flash, Silverlight or HTML5 support.</div>
 
 </div>
+
+{%- else -%}
+<div class="container">
+    <div>
+        <div style="display: inline-block">
+            <h3 style="display: inline"><b>{{ ('Upload Files via Spreadsheet') }}</b></h3>
+        </div>
+
+        <div id="fileContainer" class="pull-right" style="display: inline-block">
+            <button type="button" id="chooseFiles" class="btn btn-default btn-group btn-group-inline btn-space">
+                <span class="glyphicon glyphicon glyphicon-file"></span>
+                {{( 'Choose Spreadsheet' )}}
+            </button>
+
+            <button type="button" id="uploadfiles" class="btn btn-primary btn-group btn-group-inline btn-space">
+                <span class="glyphicon glyphicon-upload"></span>
+                {{( 'Start Upload' )}}
+            </button>
+        </div>
+
+    </div>
+    <div id="filelist">Your browser doesn't have Flash, Silverlight or HTML5 support.</div>
+</div>
+{%- endif -%}
 
 <div class ="errorLog hidden-element alert alert-dismissible fixed alert-warning">
     <div class ="container" role="alert">
@@ -201,7 +227,7 @@ $(function() {
     if (document.getElementById && document.createElement) {
     	var butt = document.createElement('BUTTON');
         butt.classList.add("saveEditButton");
-    	var buttext = document.createTextNode('Ready!');
+    	var buttext = document.createTextNode('Save!');
     	butt.appendChild(buttext);
     	butt.onclick = saveEdit;
     }
@@ -417,40 +443,50 @@ $(function() {
         init: {
             PostInit: function(up, info) {
                 experimentType = "{{ experiment.category }}";
-                switch (experimentType) {
-
-                    case 'text':
-                        fileTypes = {
-                            mime_types: [
-                                {title : "Text files", extensions : "txt,plain,html"},
-                            ]
-                        }
-        				break;
-
-                    case 'image':
-                        fileTypes = {
-                            mime_types: [
-                                {title : "Image files", extensions : "jpg,gif,png" },
-                            ]
-                        }
-        				break;
-
-        			case 'audio':
-                        fileTypes = {
-                            mime_types: [
-                                {title : "Audio Files", extensions : "mp3,wma,mp2,wav,aiff,aif,m4a,ra,dss"},
-                            ]
-                        }
-        				break;
-
-                    case 'video':
-                        fileTypes = {
-                            mime_types: [
-                                {title : "Video files", extensions : "mov,mp4,wmv,rm"},
-                            ]
-                        }
-        				break;
+                experimentUploadType = "{{ experiment.uploadType }}";
+                if ( experimentUploadType == "viaSpreadsheet") {
+                    fileTypes = {
+                        mime_types: [
+                            {title : "Uploadable files", extensions : "xls"},
+                        ]
                     }
+                }
+                else {
+                    switch (experimentType) {
+
+                        case 'text':
+                            fileTypes = {
+                                mime_types: [
+                                    {title : "Text files", extensions : "txt,plain,html"},
+                                ]
+                            }
+            				break;
+
+                        case 'image':
+                            fileTypes = {
+                                mime_types: [
+                                    {title : "Image files", extensions : "jpg,gif,png" },
+                                ]
+                            }
+            				break;
+
+            			case 'audio':
+                            fileTypes = {
+                                mime_types: [
+                                    {title : "Audio Files", extensions : "mp3,wma,mp2,wav,aiff,aif,m4a,ra,dss"},
+                                ]
+                            }
+            				break;
+
+                        case 'video':
+                            fileTypes = {
+                                mime_types: [
+                                    {title : "Video files", extensions : "mov,mp4,wmv,rm"},
+                                ]
+                            }
+            				break;
+                        }
+                }
 
                 up.setOption('filters', fileTypes);
                 document.getElementById('filelist').innerHTML = '';
@@ -495,6 +531,9 @@ $(function() {
                 uploadCompleteIcon.fadeOut(15000);
                 var serverResponse = JSON.parse(response.response);
                 $("tr[value=" + file.id + "]").attr("value", serverResponse.fileId);
+                if ( experimentUploadType == "viaSpreadsheet") {
+                    location.reload(true);
+                }
             },
 
             FilesRemoved: function(up, files) {

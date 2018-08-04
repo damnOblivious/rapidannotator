@@ -46,6 +46,14 @@ class AddExperimentForm(FlaskForm):
                     ('audio', 'audio'),
                     ('video', 'video')],
     )
+
+    uploadType = SelectField(
+        label=_('File uploading procedure'),
+        description=_("Select the way in which you wish to upload files."),
+        choices=[   ('manual', 'manual'),
+                    ('viaSpreadsheet', 'viaSpreadsheet'),]
+    )
+
     def validate_name(self, name):
         experiment = Experiment.query.filter_by(name=name.data).first()
         if experiment is not None:
