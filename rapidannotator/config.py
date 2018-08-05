@@ -11,4 +11,4 @@ class DevelopmentConfig(BaseConfig):
     SQLALCHEMY_ECHO = True
     SECRET_KEY = "sldjfhals13 2hhdwflkjdhfa"
     LOGIN_DISABLED = False
-    UPLOAD_FOLDER = '/home/tissues/interests/lal/data/uploads'
+    UPLOAD_FOLDER = '[Path_to_storage_directory]'
