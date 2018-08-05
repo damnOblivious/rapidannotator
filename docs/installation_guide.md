@@ -51,7 +51,7 @@ Run the following in the directory where rapidannotator is kept.
 
 `mkdir -p data/uploads`
 
-Change ![this line](https://github.com/guptavaibhav18197/rapidannotator/blob/master/rapidannotator/config.py#L14) accordingly.
+Change [this line](https://github.com/guptavaibhav18197/rapidannotator/blob/master/rapidannotator/config.py#L14) accordingly.
 
 
 After running the above steps you should be able to access the interface at http://localhost/frontpage/ in your browser.
