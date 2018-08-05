@@ -1,12 +1,12 @@
-#Rapid Annotator User Guide
+# Rapid Annotator User Guide
 
 The **Red Hen Rapid Annotator** is designed to enable you to go through a large number of images in a very short period of time and to to get you started with minimal training. Nonetheless, it is vital that you read carefully through this document.
 
-##Experimenter section
+## Experimenter section
 
 Initially you will be an _annotator_. You can make a request to admin to make you either an experimenter or an admin.
 
-###Basic Setup
+### Basic Setup
 
 The data needed for the Red Hen Rapid Annotator can be any of the following categories: _Image, Audio, Video or Text_. The allowed formats for the respective categories are:
 Text : txt, html
