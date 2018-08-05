@@ -36,5 +36,7 @@ You can see results in the Results page by clicking on Results Page button in th
 
 You can see all the experiments assigned to you in Experiment to Annotate tab of your home page.
 
+![image](https://raw.githubusercontent.com/guptavaibhav18197/rapidannotator/master/docs/images/annotate_experiment.png)
+
 On clicking on any experiment you see the valid labels and the keys assigned to them. so in this case if the speed of the video clip is fast you press f, if it is not playing then still and so on. If you prefer to work with a mouse or a touch-device such as a tablet computer, you can also click the buttons at the top of the page. As soon as you press the key or the button, your annotation is saved to the server and the next annotation level(if any) is loaded. On all levels for a picture are annotated then next file is rendered for annotation. It is always possible to stop the annotation process and come back later. You can also UNDO any annotation that you wish to. But once all the files are annotated there is no going back.
 Turn off / on Looping feature enables you to turn on / off looping of audio - video clips.
