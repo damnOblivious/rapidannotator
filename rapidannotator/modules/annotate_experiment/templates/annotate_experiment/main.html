@@ -27,7 +27,7 @@
 
     <div class="pull-right" style="display: inline-block">
         {%- if (experiment.category == 'video') or (experiment.category == 'audio') -%}
-            {%- if (experiment.updateType == 'manual') -%}
+            {%- if (experiment.uploadType == 'manual') -%}
             <button class="toggleLooping btn btn-primary btn-group btn-group-inline btn-space"
                 type="button" value={{current_user.looping}}>
                 {%- if current_user.looping -%}
@@ -321,7 +321,7 @@
                         currentFileIndex = -1;
                         currentLevel = -1;
                         if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
-                            if( "{{ experiment.updateType }}" === "manual" ) {
+                            if( "{{ experiment.uploadType }}" === "manual" ) {
                                 var f = $(".file[data-index='" + currentLoadedFile + "']");
                                 f.find(".clip")[0].pause();
                             }
@@ -357,10 +357,12 @@
             loadedFile.removeClass('hidden-element');
 
             if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
-                if( "{{ experiment.updateType }}" === "manual" ) {
+                if( "{{ experiment.uploadType }}" === "manual" ) {
+                    console.log("sadfasdf");
                     var f = $(".file[data-index='" + currentLoadedFile + "']");
                     f.find(".clip")[0].pause();
                     var clip = loadedFile.find('.clip');
+                    boo = clip;
                     var looping = loopingButton.val();
                     if (looping == "True") {
                         clip.attr('loop','loop');
