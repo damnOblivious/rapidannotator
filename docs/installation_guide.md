@@ -1,10 +1,10 @@
 # Rapid Annotator Installation Guide
 
 Install and configure **wsgi and apache2** on your server.
+
 Install **python3-mysqldb**.
 
 Run
-
 `git clone https://github.com/guptavaibhav18197/rapidannotator.git`
 
 `cd rapidannotator`
@@ -14,14 +14,14 @@ Run
 
 Since we need to deploy rapidannotator [flask app] on apache server, we need to link Flask and Apache using wsgi interface. For that you need to add the following lines in `/etc/apache2/apache2.conf`
 
-`WSGIScriptAlias / /path/to/rapidannotator/wsgi.py
+`WSGIScriptAlias / /path/to/rapidannotator/wsgi.py`
 
-<Directory /path/to/rapidannotator>
+`<Directory /path/to/rapidannotator>`
 
-        Require all granted
+        `Require all granted`
 
-</Directory>
-`
+`</Directory>`
+
 
 Next, in _wsgi.py_ file in the rapidannotator replace the current path i.e.
 
@@ -51,7 +51,7 @@ Run the following in the directory where rapidannotator is kept.
 
 `mkdir -p data/uploads`
 
-Change [this][https://github.com/guptavaibhav18197/rapidannotator/blob/master/rapidannotator/config.py#L14] line accordingly.
+Change ![this][https://github.com/guptavaibhav18197/rapidannotator/blob/master/rapidannotator/config.py#L14] line accordingly.
 
 
 After running the above steps you should be able to access the interface at http://localhost/frontpage/ in your browser.
