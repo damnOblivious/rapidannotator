@@ -49,7 +49,7 @@ Finally in _rapidannotator/config.py_ update the database uri :
 
 Run the following in the directory where rapidannotator is kept.
 
-`mkdir -p data/uploads`
+`mkdir -p [Path_to_storage_directory]`
 
 Change [this line](https://github.com/guptavaibhav18197/rapidannotator/blob/master/rapidannotator/config.py#L14) accordingly.
 
