@@ -368,6 +368,7 @@ def _deleteFile():
 
     experimentCategory = request.args.get('experimentCategory', None)
     experimentId = request.args.get('experimentId', None)
+    experiment = Experiment.query.filter_by(id=experimentId).first()
     fileId = request.args.get('fileId', None)
 
     currFile = File.query.filter_by(id=fileId).first()
