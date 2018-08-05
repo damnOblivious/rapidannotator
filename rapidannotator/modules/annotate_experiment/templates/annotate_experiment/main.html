@@ -27,14 +27,16 @@
 
     <div class="pull-right" style="display: inline-block">
         {%- if (experiment.category == 'video') or (experiment.category == 'audio') -%}
-        <button class="toggleLooping btn btn-primary btn-group btn-group-inline btn-space"
-            type="button" value={{current_user.looping}}>
-            {%- if current_user.looping -%}
-                {{ ('Turn off looping') }}
-            {%- else -%}
-                {{ ('Turn on looping') }}
-                {%- endif -%}
-        </button>
+            {%- if (experiment.updateType == 'manual') -%}
+            <button class="toggleLooping btn btn-primary btn-group btn-group-inline btn-space"
+                type="button" value={{current_user.looping}}>
+                {%- if current_user.looping -%}
+                    {{ ('Turn off looping') }}
+                {%- else -%}
+                    {{ ('Turn on looping') }}
+                    {%- endif -%}
+            </button>
+            {%- endif -%}
         {%- endif -%}
     </div>
     <hr class="horizontal-line">
@@ -47,9 +49,7 @@
         <div class="file col-xs-5 hidden-element" data-index={{loop.index0}} data-fileid=1>
             {%- if experiment.category == 'video' -%}
                 {%- if experiment.uploadType == 'viaSpreadsheet' -%}
-                <iframe class="clip" src="">
-                  <p>Your browser does not support iframes.</p>
-                </iframe>
+                <a href="" target="_blank">Click here</a>
                 {%- else -%}
                 <video class="clip" width="400" controls>
                     <source src="" type="video/mp4">
@@ -58,10 +58,7 @@
                 {%- endif -%}
             {%- elif experiment.category == 'audio' -%}
                 {%- if experiment.uploadType == 'viaSpreadsheet' -%}
-                <iframe class="clip" src="">
-                  <p>Your browser does not support iframes.</p>
-                </iframe>
-                <img class="audioAnnotationWindow" src="{{url_for('static', filename = 'img/audioIcon.jpeg')}}" alt="audio">
+                <a href="" target="_blank">Click here</a>
                 {%- else -%}
                 <audio class="clip" width="400" controls muted="">
                     <source src="" type="audio/mp3">
@@ -324,8 +321,10 @@
                         currentFileIndex = -1;
                         currentLevel = -1;
                         if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
-                            var f = $(".file[data-index='" + currentLoadedFile + "']");
-                            f.find(".clip")[0].pause();
+                            if( "{{ experiment.updateType }}" === "manual" ) {
+                                var f = $(".file[data-index='" + currentLoadedFile + "']");
+                                f.find(".clip")[0].pause();
+                            }
                         }
                     } else {
                         currentFileIndex += 1;
@@ -358,20 +357,22 @@
             loadedFile.removeClass('hidden-element');
 
             if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
-                clip = loadedFile.find('.clip');
-                boo = clip;
-                var looping = loopingButton.val();
-                if (looping == "True") {
-                    clip.attr('loop','loop');
-                }
-                clip[0].play();
-
-                clip[0].addEventListener("timeupdate", function(){
-                    if (clip[0].currentTime == 0) {
-                        clip[0].currentTime = clip[0].currentTime + "{{experiment.display_time.before_time}}";
+                if( "{{ experiment.updateType }}" === "manual" ) {
+                    var f = $(".file[data-index='" + currentLoadedFile + "']");
+                    f.find(".clip")[0].pause();
+                    var clip = loadedFile.find('.clip');
+                    var looping = loopingButton.val();
+                    if (looping == "True") {
+                        clip.attr('loop','loop');
                     }
-                });
+                    clip[0].play();
 
+                    clip[0].addEventListener("timeupdate", function(){
+                        if (clip[0].currentTime == 0) {
+                            clip[0].currentTime = clip[0].currentTime + "{{experiment.display_time.before_time}}";
+                        }
+                    });
+                }
             }
 
             var fileCaption = loadedFile.find('.caption h4').text();
@@ -396,12 +397,23 @@
                 loadedDiv.find('img').attr('src', url);
                 loadedDiv.find('img').attr('alt', caption);
             } else if( "{{ experiment.category }}" === "video") {
-                var video = loadedDiv.find('.clip');
-                video.attr('src', url);
-                video.origin = 'anonymous';
+                if( "{{ experiment.uploadType }}" === "manual") {
+                    var video = loadedDiv.find('.clip');
+                    video.attr('src', url);
+                } else {
+                    var link = loadedDiv.find('a');
+                    link.attr('href', url);
+                    link.text(fileToLoad.name)
+                }
             } else if( "{{ experiment.category }}" === "audio") {
-                var audio = loadedDiv.find('clip');
-                audio.attr('src', url);
+                if( "{{ experiment.uploadType }}" === "manual") {
+                    var audio = loadedDiv.find('clip');
+                    audio.attr('src', url);
+                } else {
+                    var link = loadedDiv.find('a');
+                    link.attr('href', url);
+                    link.text(fileToLoad.name)
+                }
             } else if( "{{ experiment.category }}" === "text") {
                 loadedDiv.find('pre').text(fileToLoad.content);
             }
