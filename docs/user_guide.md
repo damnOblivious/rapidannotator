@@ -15,7 +15,9 @@ Audio : mp3, wma, mp2, wav
 Video : mov, mp4, wmv, webm
 
 Data can be added either _manually_ or _viaSpreadsheet_.
+
 **MANUALLY** : Chooses files and upload them.
+
 **VIA SPREADSHEET** : Content of each file should be in a separate row. Don’t leave any row blank in between. Start from the first row itself. Fill the following detail in each respective column
 * Name
 * Content - for text plain text, for image / video / audio - url to the location where the actual data is.
