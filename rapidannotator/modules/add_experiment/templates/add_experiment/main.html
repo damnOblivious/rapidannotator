@@ -11,10 +11,6 @@
 
 {% block experiment_body %}
 
-<!-- <div class="container">
-    <h5><a>Home</a> > <a>Add Experiments</a></h5>
-</div>
- -->
 
 <div class="container">
 
@@ -125,10 +121,11 @@
 </div>
 
 <div class="container">
+
     <table id="fileTable" class="table table-hover table-striped">
         <thead>
             <tr class="">
-                <th style="width: 10.0%">{{ ('File') }}</th>
+                <th style="width: 10.0%">{{ ('Status') }}</th>
                 <th style="width: 20.0%">{{ ('Name') }}</th>
                 <th style="width: 67.0%">{{ ('Description') }}</th>
                 <th style="width: 3.0%"></th>
@@ -140,7 +137,8 @@
             {% for file in experiment.files | reverse %}
                 <tr class="" value={{file.id}} data-href="">
                 <td>
-                    <img class="displayImages" src="{{url_for('static', filename = 'img/videoIcon.png')}}" alt="Red Hen Logo">
+                    <center><i class="fa fa-check uploadedFileIcon"></i></center>
+                    <center><span class="uploadedFileText">{{ ('Uploaded') }}</span></center>
                 </td>
                 <td class="fileName"><p>{{file.name}}</p></td>
                 <td class="fileCaption"><p>{%- if file.caption -%} {{ file.caption }} {%- else -%} {{('No caption provided')}} {%- endif -%}</p></td>
@@ -374,7 +372,6 @@ $(function() {
 
         var fileTableBody = $('#fileTable').find("tbody");
         var rowAttributeDict = {
-            "class" :           "choosenFile",
             "value" :           file.id,
         }
 
@@ -395,12 +392,16 @@ $(function() {
             "style" :     "width: 3.0%",
         });
 
-        var imgAttributeDict = {
-            "class" :        "displayImages",
-            "src" :          "{{url_for('static', filename = 'img/videoIcon.png')}}",
-            "alt" :          "Red Hen Lab",
+        var statusIconAttributeDict = {
+            "class" :   "fa fa-upload pendingFileIcon",
         };
-        var imageToAdd = $("<img/>", imgAttributeDict);
+        var statusIcon = $("<i/>", statusIconAttributeDict);
+
+        var statusSpanAttributeDic = {
+            "class" :   "pendingFileText",
+            "text" :    "Pending",
+        };
+        var statusSpan = $("<span/>", statusSpanAttributeDic);
 
         var cell3Text = "<p>No caption provided</p>";
         var cell2Text = "<p>" + file.name + "</p>";
@@ -413,14 +414,20 @@ $(function() {
         var buttonToAdd = $("<button/>", buttonAttributeDict);
         buttonToAdd.append("&times;");
 
-        imageToAdd.appendTo(cell1);
+        var lineBreak = $("<br/>");
+        var centerTag1 = $("<center/>");
+        var centerTag2 = $("<center/>");
+        statusIcon.appendTo(centerTag1);
+        statusSpan.appendTo(centerTag2);
+
+
+        centerTag1.appendTo(cell1);
+        centerTag2.appendTo(cell1);
         cell2.append(cell2Text);
         cell3.append(cell3Text);
         buttonToAdd.appendTo(cell4);
         row.append(cell1,cell2,cell3,cell4);
         fileTableBody.prepend(row);
-
-
     }
 
     uploader = new plupload.Uploader({
@@ -518,16 +525,15 @@ $(function() {
             FileUploaded: function(up, file, response) {
                 uploadedRow = $("tr[value=" + file.id + "]");
                 uploadedRow.removeClass('choosenFile');
-                var imageColumn = uploadedRow.find('td:first-child');
+                var firstColumn = uploadedRow.find('td:first-child');
+                var icon = firstColumn.find("center").find('i');
+                var text = firstColumn.find("center").find('span');
+                icon.removeClass("fa-upload pendingFileIcon");
+                icon.addClass("fa-check uploadedFileIcon");
+                text.removeClass("pendingFileText");
+                text.addClass("uploadedFileText");
+                text.text("Uploaded");
 
-                var imgAttributeDict = {
-                    "class" :        "completeIcon",
-                    "src" :          "{{url_for('static', filename = 'img/uploadComplete.jpeg')}}",
-                    "alt" :          "Upload Complete",
-                };
-                var uploadCompleteIcon = $("<img/>", imgAttributeDict);
-                uploadCompleteIcon.appendTo(imageColumn);
-                uploadCompleteIcon.fadeOut(15000);
                 var serverResponse = JSON.parse(response.response);
                 $("tr[value=" + file.id + "]").attr("value", serverResponse.fileId);
                 if ( experimentUploadType == "viaSpreadsheet") {
@@ -633,7 +639,6 @@ $(function() {
 
             var currentSelected = $(this);
             var userName = currentSelected.find('span').text();
-            ttt = currentSelected;
             var url = "{{ url_for('add_experiment._addAnnotator')}}";
             var data = {
                 'userName' : userName,
