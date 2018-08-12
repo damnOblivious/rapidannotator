@@ -68,6 +68,10 @@ Now set an identification password for the user :
 
 `alter user username@localhost identified by 'password';`
 
+Tell the server to reload the grant tables
+
+`flush privileges;`
+
 Finally in _rapidannotator/config.py_ update the database uri :
 
 `SQLALCHEMY_DATABASE_URI = 'mysql://username:password@localhost/[Database_name]'`
@@ -83,7 +87,7 @@ After running the above steps you should be able to access the interface at http
 
 Create a user there and make it admin by running the following command in mysql database.
 
-`UPDATE User SET admin=1  WHERE id=X;`
+`UPDATE User SET admin=1  WHERE id='X';`
 
 Here X is the id of the user you want to make the admin.
 
