@@ -1,6 +1,16 @@
 # Rapid Annotator Installation Guide
 
-Install and configure **wsgi and apache2** on your server.
+Install and configure **apache2** for python3 on your server.
+
+Install **wsgi** for python3 on your server, by running the following command
+
+`sudo apt-get install python3-pip libapache2-mod-wsgi-py3`
+
+If you have an wsgi for python2 installed then: first uninstall it by the
+following command and then run the above command and then run the above command
+
+`sudo apt-get install python3-pip libapache2-mod-wsgi-py3`
+
 
 Install **python3-mysqldb**.
 
@@ -12,16 +22,25 @@ Run
 `pip3 install -r requirements.txt`
 
 
-Since we need to deploy rapidannotator [flask app] on apache server, we need to link Flask and Apache using wsgi interface. For that you need to add the following lines in `/etc/apache2/apache2.conf`
+Since we need to deploy rapidannotator [flask app] on apache server, we need to link Flask and Apache using wsgi interface. For that you need to add the following lines in `/etc/apache2/sites-enabled/000-default.conf`
 
-```WSGIScriptAlias / /path/to/rapidannotator/wsgi.py
+```<VirtualHost *:8000>
 
-<Directory /path/to/rapidannotator>
+    WSGIScriptAlias / /var/www/rapidannotator/wsgi.py
 
-        Require all granted
+    <Directory /var/www/rapidannotator>
 
-</Directory>
+      Require all granted
+
+    </Directory>
+
+</VirtualHost>
 ```
+
+Add the following line to listen to port 8000 in `/etc/apache2/ports.conf`
+
+```Listen 8000```
+
 
 Next, in _wsgi.py_ file in the rapidannotator replace the current path i.e.
 
@@ -41,7 +60,11 @@ Create a database for rapidannotator and select it :
 
 Now grant the privileges to rapidannotator :
 
-`grant all privileges on [Database_name] to username@localhost identified by 'password' with grant option;`
+`grant all privileges on [Database_name] to username@localhost`
+
+Now set an identification password for the user :
+
+`alter user username@localhost identified by 'password';`
 
 Finally in _rapidannotator/config.py_ update the database uri :
 
