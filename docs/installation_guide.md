@@ -7,7 +7,7 @@ Install **wsgi** for python3 on your server, by running the following command
 `sudo apt-get install python3-pip libapache2-mod-wsgi-py3`
 
 If you have an wsgi for python2 installed then: first uninstall it by the
-following command and then run the above command and then run the above command
+following command and then run the above command
 
 `sudo apt-get install python3-pip libapache2-mod-wsgi-py3`
 
@@ -15,6 +15,7 @@ following command and then run the above command and then run the above command
 Install **python3-mysqldb**.
 
 Run
+
 `git clone https://github.com/guptavaibhav18197/rapidannotator.git`
 
 `cd rapidannotator`
@@ -24,7 +25,8 @@ Run
 
 Since we need to deploy rapidannotator [flask app] on apache server, we need to link Flask and Apache using wsgi interface. For that you need to add the following lines in `/etc/apache2/sites-enabled/000-default.conf`
 
-```<VirtualHost *:8000>
+```
+<VirtualHost *:8000>
 
     WSGIScriptAlias / /var/www/rapidannotator/wsgi.py
 
@@ -60,7 +62,7 @@ Create a database for rapidannotator and select it :
 
 Now grant the privileges to rapidannotator :
 
-`grant all privileges on [Database_name] to username@localhost`
+`grant all privileges on [Database_name] to username@localhost;`
 
 Now set an identification password for the user :
 
