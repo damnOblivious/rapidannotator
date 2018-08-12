@@ -14,7 +14,7 @@ from wtforms.validators import DataRequired, EqualTo, StopValidation, \
 from rapidannotator.models import User
 from rapidannotator.validators import USERNAME_RULES, validate_username
 
-''' TODO! min max lengths ''' 
+''' TODO! min max lengths '''
 def strip_filter(text):
     """Filter for trimming whitespace.
 
@@ -58,7 +58,7 @@ class RegistrationForm(FlaskForm):
 
     password = PasswordField(
         label=_('Password'),
-        validators=[DataRequired(message=_('Username not provided.'))],)
+        validators=[DataRequired(message=_('Password not provided.'))],)
 
     password2 = PasswordField(
         label=_('Confirm Password'),

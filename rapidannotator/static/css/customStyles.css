@@ -126,3 +126,21 @@
 .choosenFile {
     background-color: #EBED6E !important;
 }
+
+.uploadedFileIcon {
+    font-size:  2em;
+    color:  green;
+}
+
+.uploadedFileText {
+    color:  green;
+}
+
+.pendingFileIcon {
+    font-size:  2em;
+    color:  #ffcc00;
+}
+
+.pendingFileText {
+    color:  #ffaa00;
+}

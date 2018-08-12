@@ -4,8 +4,8 @@ app.config.from_object('rapidannotator.config.DevelopmentConfig')
 
 from flask_login import LoginManager
 login = LoginManager()
-login.login_view = 'frontpage.index'
 login.init_app(app)
+login.login_view = 'frontpage.index'
 
 from rapidannotator.models import db
 db.init_app(app)
