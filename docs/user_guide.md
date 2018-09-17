@@ -38,7 +38,7 @@ You can see results in the Results page by clicking on Results Page button in th
 
 Below is the database schema for Rapid Annotator/
 
-![image](https://raw.githubusercontent.com/guptavaibhav18197/rapidannotator/master/docs/images/database_schema.png)
+![image](https://raw.githubusercontent.com/guptavaibhav18197/rapidannotator/master/docs/images/rapid_annotator_database_schema.png.png)
 
 ## Annotator section
 
