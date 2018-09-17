@@ -34,6 +34,12 @@ You also have freedom to bind any key with respective labels. Although if you le
 
 You can see results in the Results page by clicking on Results Page button in the main add_experiment page.
 
+## Database Schema
+
+Below is the database schema for Rapid Annotator/
+
+![image](https://raw.githubusercontent.com/guptavaibhav18197/rapidannotator/master/docs/images/database_schema.png)
+
 ## Annotator section
 
 You can see all the experiments assigned to you in Experiment to Annotate tab of your home page.
