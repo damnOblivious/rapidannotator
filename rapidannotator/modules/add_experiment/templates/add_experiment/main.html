@@ -215,6 +215,8 @@ $(function() {
     /* ((TODO)) UPDATE IMAGE */
     /* (TODO) change multipart_params TO params {if multipart_params is deprecated}*/
 
+    var chooseFilesButton = $('#chooseFiles');
+
     var closeErrorButton = $('.errorLog').find(".container").find("button");
     var deleteFileButton = '.deleteFileButton';
     var currentDeleteFileId = -1;
@@ -362,6 +364,12 @@ $(function() {
     $("body").on("click", deleteFileButton, function() {
         currentDeleteFileId = $(this).closest("tr").attr('value');
     });
+
+    chooseFilesButton.on("click", function() {
+        if ( experimentUploadType == "viaSpreadsheet") {
+            alert('experiment names, caption, content should not exceed 1024, 320, 32000 characters. If so they will be truncated.');
+        }
+    })
 
     closeErrorButton.on('click', function() {
             $(".errorLog").find(".container").find("strong").text("");

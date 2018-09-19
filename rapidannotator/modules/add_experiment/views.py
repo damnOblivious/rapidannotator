@@ -334,12 +334,12 @@ def addFilesViaSpreadsheet(experimentId, spreadsheet):
     book = xlrd.open_workbook(filePath)
     first_sheet = book.sheet_by_index(0)
     for i in range(first_sheet.nrows):
-        name = first_sheet.cell(i, 0).value
-        content = first_sheet.cell(i, 1).value
-        caption = first_sheet.cell(i, 2).value
-        newFile = File(name=name,
-                    content=content,
-                    caption=caption,
+        name = str(first_sheet.cell(i, 0).value
+        content = str(first_sheet.cell(i, 1).value
+        caption = str(first_sheet.cell(i, 2).value
+        newFile = File(name=name[:1024],
+                    content=content[:32000],
+                    caption=caption[:320],
                     experiment_id=experimentId,
         )
         experiment.files.append(newFile)
