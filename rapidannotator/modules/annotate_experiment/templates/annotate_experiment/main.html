@@ -27,7 +27,6 @@
 
     <div class="pull-right" style="display: inline-block">
         {%- if (experiment.category == 'video') or (experiment.category == 'audio') -%}
-            {%- if (experiment.uploadType == 'manual') -%}
             <button class="toggleLooping btn btn-primary btn-group btn-group-inline btn-space"
                 type="button" value={{current_user.looping}}>
                 {%- if current_user.looping -%}
@@ -36,6 +35,7 @@
                     {{ ('Turn on looping') }}
                     {%- endif -%}
             </button>
+            {%- if (experiment.uploadType == 'manual') -%}
             {%- endif -%}
         {%- endif -%}
     </div>
@@ -48,7 +48,7 @@
         {% for i in range(5) %}
         <div class="file col-xs-5 hidden-element" data-index={{loop.index0}} data-fileid=1>
             {%- if experiment.category == 'video' -%}
-                {%- if experiment.uploadType == 'viaSpreadsheet' -%}
+                {%- if experiment.uploadType == 'NOTviaSpreadsheet' -%}
                 <a href="" target="_blank">Click here</a>
                 {%- else -%}
                 <video class="clip" width="400" controls>
@@ -57,7 +57,7 @@
                 </video>
                 {%- endif -%}
             {%- elif experiment.category == 'audio' -%}
-                {%- if experiment.uploadType == 'viaSpreadsheet' -%}
+                {%- if experiment.uploadType == 'NOTviaSpreadsheet' -%}
                 <a href="" target="_blank">Click here</a>
                 {%- else -%}
                 <audio class="clip" width="400" controls muted="">
@@ -176,7 +176,7 @@
         var keyBindingDict = {{keyBindingDict | safe}};
 
         var preLoadLimit = 5;
-        var currentLoadedFile = 0;
+        var currentLoadedFile = 0; // index of the div currently displayed
         var preLoadedTill = 0;
 
         function preLoadFiles() {
@@ -278,8 +278,11 @@
                 data : data,
             });
 
+            if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
+                stopThisClip(currentLoadedFile);
+            }
             if(currentFileIndex == {{firstFile}}) {
-
+                /* do something if required */
             } else {
 
                 currentFileIndex -= 1;
@@ -322,11 +325,14 @@
                         currentLevel = -1;
                         if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
                             if( "{{ experiment.uploadType }}" === "manual" ) {
+                            }
                                 var f = $(".file[data-index='" + currentLoadedFile + "']");
                                 f.find(".clip")[0].pause();
-                            }
                         }
                     } else {
+                        if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
+                            stopThisClip(currentLoadedFile);
+                        }
                         currentFileIndex += 1;
                         $(".file[data-index='" + currentLoadedFile + "']").addClass('hidden-element');
                         currentLoadedFile = (currentLoadedFile + 1) % preLoadLimit;
@@ -352,30 +358,34 @@
             });
         }
 
+        function stopThisClip(divIndex) {
+            var f = $(".file[data-index='" + divIndex + "']");
+            if (f.length != 0) {
+                f.find(".clip")[0].pause();
+            }
+        }
+
         function showCurrentFile(divIndex) {
-            var previousIndex = (divIndex == 0) ? preLoadLimit : divIndex - 1;
             loadedFile = $(".file[data-index='" + divIndex + "']");
             loadedFile.removeClass('hidden-element');
 
             if( "{{ experiment.category }}" === "video" || "{{ experiment.category }}" === "audio") {
-                if( "{{ experiment.uploadType }}" === "manual" ) {
-                    console.log("sadfasdf");
-                    var f = $(".file[data-index='" + previousIndex + "']");
-                    if (f.length != 0) f.find(".clip")[0].pause();
                     var clip = loadedFile.find('.clip');
-                    boo = clip;
+                    cc = clip;
                     var looping = loopingButton.val();
                     if (looping == "True") {
                         clip.attr('loop','loop');
                     }
                     clip[0].play();
-
+            /*
                     clip[0].addEventListener("timeupdate", function(){
                         if (clip[0].currentTime == 0) {
+                            // console.log(":asdf");
                             clip[0].currentTime = clip[0].currentTime + "{{experiment.display_time.before_time}}";
                         }
                     });
-                }
+
+            */
             }
 
             var fileCaption = loadedFile.find('.caption h4').text();
@@ -400,23 +410,23 @@
                 loadedDiv.find('img').attr('src', url);
                 loadedDiv.find('img').attr('alt', caption);
             } else if( "{{ experiment.category }}" === "video") {
-                if( "{{ experiment.uploadType }}" === "manual") {
+                // if( "{{ experiment.uploadType }}" === "manual") {
                     var video = loadedDiv.find('.clip');
                     video.attr('src', url);
-                } else {
-                    var link = loadedDiv.find('a');
-                    link.attr('href', url);
-                    link.text(fileToLoad.name)
-                }
+                // } else {
+                //     var link = loadedDiv.find('a');
+                //     link.attr('href', url);
+                //     link.text(fileToLoad.name)
+                // }
             } else if( "{{ experiment.category }}" === "audio") {
-                if( "{{ experiment.uploadType }}" === "manual") {
+                // if( "{{ experiment.uploadType }}" === "manual") {
                     var audio = loadedDiv.find('clip');
                     audio.attr('src', url);
-                } else {
-                    var link = loadedDiv.find('a');
-                    link.attr('href', url);
-                    link.text(fileToLoad.name)
-                }
+                // } else {
+                //     var link = loadedDiv.find('a');
+                //     link.attr('href', url);
+                //     link.text(fileToLoad.name)
+                // }
             } else if( "{{ experiment.category }}" === "text") {
                 loadedDiv.find('pre').text(fileToLoad.content);
             }
