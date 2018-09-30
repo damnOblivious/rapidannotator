@@ -327,16 +327,16 @@ def addFilesViaSpreadsheet(experimentId, spreadsheet):
     experiment = Experiment.query.filter_by(id=experimentId).first()
 
     from rapidannotator import app
-    filename = 'temp.xls'
+    filename = 'temp_' + current_user.username + '.xls'
     filePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     spreadsheet.save(filePath)
 
     book = xlrd.open_workbook(filePath)
     first_sheet = book.sheet_by_index(0)
     for i in range(first_sheet.nrows):
-        name = str(first_sheet.cell(i, 0)).value
-        caption = str(first_sheet.cell(i, 2)).value
-        content = str(first_sheet.cell(i, 1)).value
+        name = str(first_sheet.cell(i, 0).value)
+        caption = str(first_sheet.cell(i, 2).value)
+        content = str(first_sheet.cell(i, 1).value)
         newFile = File(name=name[:1024],
                     content=content[:32000],
                     caption=caption[:320],

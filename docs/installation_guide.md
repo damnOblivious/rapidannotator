@@ -27,6 +27,10 @@ Run
 
 Since we need to deploy rapidannotator [flask app] on apache server, we need to link Flask and Apache using wsgi interface. For that you need to add the following lines in `/etc/apache2/sites-enabled/000-default.conf`
 
+Copy wsgi_template.py to wsgi.py and make the required changes in the new file.
+
+`cp wsgi_template.py wsgi.py`
+
 ```
 <VirtualHost *:8000>
 
@@ -89,7 +93,7 @@ Run the following in the directory where rapidannotator is kept.
 Change [this line](https://github.com/guptavaibhav18197/rapidannotator/blob/master/rapidannotator/config.py#L14) accordingly.
 
 
-After running the above steps you should be able to access the interface at http://localhost/frontpage/ in your browser.
+After running the above steps you should be able to access the interface at http://localhost:8000/frontpage/ in your browser.
 
 Create a user there and make it admin by running the following command in mysql database.
 
