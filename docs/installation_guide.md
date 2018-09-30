@@ -74,6 +74,10 @@ Tell the server to reload the grant tables
 
 `flush privileges;`
 
+Copy config_template.py to config.py and make the required changes in the new file.
+
+`cp config_template.py config.py`
+
 Finally in _rapidannotator/config.py_ update the database uri :
 
 `SQLALCHEMY_DATABASE_URI = 'mysql://username:password@localhost/[Database_name]'`
