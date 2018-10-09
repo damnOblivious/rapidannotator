@@ -605,7 +605,7 @@ def _exportResults(experimentId):
     sheet = excel_file.add_sheet('results')
     sheet.col(0).width = 256 * 40
     row, col = 0, 0
-    allLables = {}
+    allLables, columnNumber = {}, {}
 
     annotationLevels = AnnotationLevel.query.filter_by(experiment_id=\
                         experimentId).order_by(AnnotationLevel.level_number)
@@ -615,6 +615,7 @@ def _exportResults(experimentId):
         for label in labels:
             allLables[label.id] = 0
             col += 1
+            columnNumber[label.id] = col
             sheet.write(row, col, label.name)
 
     row, col = 0, 0
@@ -632,7 +633,7 @@ def _exportResults(experimentId):
 
         col = 1
         for key in allLables:
-            sheet.write(row, col, allLables[key])
+            sheet.write(row, columnNumber[key], allLables[key])
             col += 1
             allLables[key] = 0
 
