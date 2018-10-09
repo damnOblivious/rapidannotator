@@ -70,8 +70,8 @@
                 <div class="col-xs-12 container-fluid labelCollection">
                     {% for label in annotation_level.labels %}
                     <span class="labels" value={{label.id}}>
-                        <span class="col-xs-6 h5 labelName"> {{ label.name }} </span>
-                        <span class="col-xs-2 h5 pull-left labelKey"> {%- if label.key_binding -%} {{ label.key_binding }} {%- else -%} {{('default')}} {%- endif -%} </span>
+                        <span class="col-xs-6 h5 labelName">{{ label.name }}</span>
+                        <span class="col-xs-2 h5 pull-left labelKey">{%- if label.key_binding -%} {{ label.key_binding }} {%- else -%} {{('default')}} {%- endif -%}</span>
                         <span class="col-xs-2 glyphicon glyphicon-trash edit-button-margin"
                             data-toggle="modal" data-target="#deleteLabelModal"></span>
                         <span class="col-xs-2 glyphicon glyphicon-pencil edit-button-margin"
