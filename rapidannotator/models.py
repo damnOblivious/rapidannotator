@@ -431,7 +431,7 @@ class File(db.Model):
     ..  size limit of TEXT field of MySQL is 65535
     ..  the maximum table row size allowed is 65535 including storing overheads.
     '''
-    content = db.Column(db.String(32768), nullable=False, server_default='')
+    content = db.Column(db.String(10001), nullable=False, server_default='')
 
     """ One to Many relation
     ..  For File:
