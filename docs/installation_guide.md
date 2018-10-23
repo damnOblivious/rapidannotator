@@ -60,7 +60,28 @@ As the last step we need to link the database[MySQL] to rapidannotator.
 
 Login to MySQL : `mysql -u root -p`
 
-Create a database for rapidannotator and select it :
+To enable full utf8 support, check if you mysql already supports full utf8 by running the following command
+
+`SHOW VARIABLES WHERE Variable_name LIKE 'character\_set\_%' OR Variable_name LIKE 'collation%';`
+
+If it shows utf8 instead of utf8mb4 then add the following lines in `/etc/mysql/my.cnf` file otherwise move to next step.
+
+```
+[client]
+default-character-set = utf8mb4
+
+[mysql]
+default-character-set = utf8mb4
+
+[mysqld]
+character-set-client-handshake = FALSE
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+```
+
+For more information check this [guide](https://mathiasbynens.be/notes/mysql-utf8mb4)
+
+Now, create a database for rapidannotator and select it :
 
 `create database [database_name];`
 
@@ -90,7 +111,7 @@ Run the following in the directory where rapidannotator is kept.
 
 `mkdir -p [Path_to_storage_directory]`
 
-Change [this line](https://github.com/guptavaibhav18197/rapidannotator/blob/master/rapidannotator/config.py#L14) accordingly.
+Change [this line](https://github.com/guptavaibhav18197/rapidannotator/blob/master/rapidannotator/config_template.py#L9) accordingly.
 
 
 After running the above steps you should be able to access the interface at http://localhost:8000/frontpage/ in your browser.
