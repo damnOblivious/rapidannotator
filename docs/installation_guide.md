@@ -60,7 +60,7 @@ As the last step we need to link the database[MySQL] to rapidannotator.
 
 Login to MySQL : `mysql -u root -p`
 
-To enable full utf8 support, check if you mysql already supports full utf8 by running the following command
+**To enable full utf8 support**, check if you mysql already supports full utf8 by running the following command
 
 `SHOW VARIABLES WHERE Variable_name LIKE 'character\_set\_%' OR Variable_name LIKE 'collation%';`
 
