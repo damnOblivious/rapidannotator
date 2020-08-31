@@ -8,9 +8,8 @@ With Red Hen Lab’s Rapid Annotator we try to enable researchers worldwide to a
 
 Rapid Annotator is built using _Flask (Python Framework) and Javascript (+ Html5 / css3 / bootstrap)_. 
 
-I have made a GSoC blog, please refer to it for my all GSoC blogposts about the progress made so far.
-Blog link: https://guptavaibhav18197.github.io/GSoC-Blog/
+I have made a GSoC blog, please refer to it for my all [GSoC blogposts](https://damnoblivious.github.io/GSoC-Blog/) about the progress made so far.
 
-For installtion guide refer [here](https://github.com/guptavaibhav18197/rapidannotator/blob/master/docs/installation_guide.md).
+For installtion guide refer [here](https://github.com/damnoblivious/rapidannotator/blob/master/docs/installation_guide.md).
 
-For user guide refer [here](https://github.com/guptavaibhav18197/rapidannotator/blob/master/docs/user_guide.md).
+For user guide refer [here](https://github.com/damnoblivious/rapidannotator/blob/master/docs/user_guide.md).
